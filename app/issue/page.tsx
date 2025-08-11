@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, FolderKanban } from "lucide-react"
+import { FolderKanban } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { IssueDetail } from "@/components/issue-detail"
 
@@ -108,35 +108,24 @@ export default function IssuePage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">
-        {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-          <Link href="/" className="hover:text-foreground">
+          <Link href="/" className="hover:text-foreground transition-colors">
             Boards
           </Link>
           <span>/</span>
           <Link
             href={`/board?name=${encodeURIComponent(boardName)}`}
-            className="hover:text-foreground flex items-center gap-1"
+            className="hover:text-foreground flex items-center gap-1 transition-colors"
           >
             <FolderKanban className="h-3 w-3" />
             {boardName}
           </Link>
           <span>/</span>
-          <span className="text-foreground">{issue.title}</span>
+          <span className="text-foreground font-medium">{issue.title}</span>
         </nav>
 
-        {/* Back Button */}
-        <div className="mb-6">
-          <Link href={`/board?name=${encodeURIComponent(boardName)}`}>
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Board
-            </Button>
-          </Link>
-        </div>
-
         {/* Issue Detail */}
-        <div className="h-[calc(100vh-200px)]">
+        <div className="h-[calc(100vh-160px)]">
           <IssueDetail issue={issue} boardName={boardName} showOpenInNewTab={false} />
         </div>
       </div>
