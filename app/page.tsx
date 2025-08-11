@@ -179,57 +179,6 @@ export default function BoardListPage() {
                       )}
                     </div>
                   </CardHeader>
-                  {viewMode === "grid" && (
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {board.settings?.columns?.slice(0, 3).map((column) => (
-                          <Badge
-                            key={column.id}
-                            variant="outline"
-                            className="text-xs"
-                            style={{
-                              borderColor: column.color,
-                              color: column.color,
-                            }}
-                          >
-                            {column.title}
-                          </Badge>
-                        ))}
-                        {getColumnCount(board) > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{getColumnCount(board) - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    </CardContent>
-                  )}
-                  {viewMode === "list" && (
-                    <CardContent className="pt-0">
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-wrap gap-2">
-                          {board.settings?.columns?.slice(0, 2).map((column) => (
-                            <Badge
-                              key={column.id}
-                              variant="outline"
-                              className="text-xs"
-                              style={{
-                                borderColor: column.color,
-                                color: column.color,
-                              }}
-                            >
-                              {column.title}
-                            </Badge>
-                          ))}
-                          {getColumnCount(board) > 2 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{getColumnCount(board) - 2} more
-                            </Badge>
-                          )}
-                        </div>
-                        <Badge variant="secondary">{getColumnCount(board)} columns</Badge>
-                      </div>
-                    </CardContent>
-                  )}
                 </Card>
               </Link>
             ))}

@@ -6,7 +6,9 @@ category: learning
 labels: ["reading", "personal-development"]
 createdAt: 2024-01-01
 targetDate: 2024-12-31
+assignedTo: dima.naumau
 booksRead: 3
+deadline: 2026-01-01
 ---
 
 # Read 24 Books This Year
