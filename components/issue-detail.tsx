@@ -1,5 +1,5 @@
 "use client"
-import { ExternalLink, Calendar, User, Tag, AlertCircle, Clock, Hash } from "lucide-react"
+import { ExternalLink, Calendar, User, Tag, AlertCircle, Clock, Hash, Folder } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,6 +11,7 @@ interface Issue {
   content: string
   frontmatter: Record<string, any>
   filename: string
+  relativePath: string // Added relative path
   createdAt?: string
   updatedAt?: string
 }
@@ -22,6 +23,40 @@ interface IssueDetailProps {
 }
 
 export function IssueDetail({ issue, boardName, showOpenInNewTab = true }: IssueDetailProps) {
+  const formatValue = (value: any): string => {
+    if (value === null || value === undefined) return "—"
+
+    // Handle dates
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+      try {
+        return new Date(value).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      } catch {
+        return value
+      }
+    }
+
+    // Handle arrays
+    if (Array.isArray(value)) {
+      return value.join(", ")
+    }
+
+    // Handle objects
+    if (typeof value === "object") {
+      return JSON.stringify(value, null, 2)
+    }
+
+    // Handle booleans
+    if (typeof value === "boolean") {
+      return value ? "Yes" : "No"
+    }
+
+    return String(value)
+  }
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Unknown"
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -71,6 +106,14 @@ export function IssueDetail({ issue, boardName, showOpenInNewTab = true }: Issue
           <div className="flex items-center gap-1 text-sm font-mono">
             <Hash className="h-3 w-3" />
             {issue.id}
+          </div>
+        </div>
+
+        <div className="flex items-start justify-between">
+          <span className="text-sm font-medium text-muted-foreground">Path</span>
+          <div className="flex items-center gap-1 text-sm font-mono text-right">
+            <Folder className="h-3 w-3 flex-shrink-0" />
+            <span className="break-all">{issue.relativePath}</span>
           </div>
         </div>
 
@@ -147,15 +190,23 @@ export function IssueDetail({ issue, boardName, showOpenInNewTab = true }: Issue
           </div>
         )}
 
-        {/* Additional frontmatter fields */}
         {Object.entries(issue.frontmatter)
-          .filter(([key]) => !["priority", "status", "assignee", "createdBy", "labels", "column"].includes(key))
+          .filter(
+            ([key]) =>
+              !["priority", "status", "assignee", "createdBy", "labels", "column", "createdAt", "updatedAt"].includes(
+                key,
+              ),
+          )
           .map(([key, value]) => (
-            <div key={key} className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground capitalize">
-                {key.replace(/([A-Z])/g, " $1").trim()}
-              </span>
-              <span className="text-sm">{String(value)}</span>
+            <div key={key} className="flex items-start justify-between gap-2">
+              <span className="text-sm font-medium text-muted-foreground flex-shrink-0">{key}</span>
+              <div className="text-sm text-right break-words">
+                {typeof value === "object" && value !== null ? (
+                  <pre className="text-xs bg-muted p-2 rounded whitespace-pre-wrap">{formatValue(value)}</pre>
+                ) : (
+                  <span>{formatValue(value)}</span>
+                )}
+              </div>
             </div>
           ))}
       </div>

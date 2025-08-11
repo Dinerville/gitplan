@@ -8,6 +8,7 @@ export interface Issue {
   content: string
   frontmatter: Record<string, any>
   filename: string
+  relativePath: string // Added relative path from board root
   createdAt?: Date
   updatedAt?: Date
 }
@@ -153,39 +154,48 @@ export class GitPlanAPI {
 
   private getIssuesFromPath(boardPath: string): Issue[] {
     try {
-      const files = fs.readdirSync(boardPath)
       const issues: Issue[] = []
-
-      for (const file of files) {
-        if (file.endsWith(".md") && file !== "view.json") {
-          const filePath = path.join(boardPath, file)
-          const stats = fs.statSync(filePath)
-          const content = fs.readFileSync(filePath, "utf-8")
-          const parsed = matter(content)
-
-          // Ensure required frontmatter fields
-          const frontmatter = {
-            ...parsed.data,
-            createdAt: parsed.data.createdAt || stats.birthtime,
-            updatedAt: parsed.data.updatedAt || stats.mtime,
-          }
-
-          issues.push({
-            id: path.parse(file).name,
-            title: parsed.data.title || this.generateTitleFromContent(parsed.content) || path.parse(file).name,
-            content: parsed.content,
-            frontmatter,
-            filename: file,
-            createdAt: stats.birthtime,
-            updatedAt: stats.mtime,
-          })
-        }
-      }
-
+      this.readIssuesRecursively(boardPath, boardPath, issues) // Use recursive function
       return this.sortIssues(issues)
     } catch (error) {
       console.error(`Error reading issues from ${boardPath}:`, error)
       return []
+    }
+  }
+
+  private readIssuesRecursively(currentPath: string, boardPath: string, issues: Issue[]): void {
+    const files = fs.readdirSync(currentPath)
+
+    for (const file of files) {
+      const filePath = path.join(currentPath, file)
+      const stats = fs.statSync(filePath)
+
+      if (stats.isDirectory()) {
+        // Recursively read subdirectories
+        this.readIssuesRecursively(filePath, boardPath, issues)
+      } else if (file.endsWith(".md") && file !== "view.json") {
+        const content = fs.readFileSync(filePath, "utf-8")
+        const parsed = matter(content)
+        const relativePath = path.relative(boardPath, filePath)
+
+        // Ensure required frontmatter fields
+        const frontmatter = {
+          ...parsed.data,
+          createdAt: parsed.data.createdAt || stats.birthtime,
+          updatedAt: parsed.data.updatedAt || stats.mtime,
+        }
+
+        issues.push({
+          id: relativePath.replace(/\.md$/, "").replace(/[/\\]/g, "-"), // Use relative path as ID
+          title: parsed.data.title || this.generateTitleFromContent(parsed.content) || path.parse(file).name,
+          content: parsed.content,
+          frontmatter,
+          filename: file,
+          relativePath, // Store relative path
+          createdAt: stats.birthtime,
+          updatedAt: stats.mtime,
+        })
+      }
     }
   }
 
