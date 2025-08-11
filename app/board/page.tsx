@@ -21,6 +21,13 @@ interface Issue {
   updatedAt?: string
 }
 
+interface CardField {
+  field: string
+  type: "badge" | "badges" | "date" | "text"
+  icon?: string
+  maxDisplay?: number
+}
+
 interface KanbanColumn {
   id: string
   title: string
@@ -38,6 +45,7 @@ interface Board {
 interface KanbanBoard {
   board: Board
   columns: KanbanColumn[]
+  cardFields?: CardField[]
 }
 
 export default function BoardPage() {
@@ -104,6 +112,102 @@ export default function BoardPage() {
       default:
         return <Clock className="h-3 w-3" />
     }
+  }
+
+  const getIconComponent = (iconName?: string) => {
+    switch (iconName) {
+      case "user":
+        return <User className="h-3 w-3 mr-1" />
+      case "tag":
+        return <Tag className="h-3 w-3 mr-1" />
+      case "calendar":
+        return <Calendar className="h-3 w-3 mr-1" />
+      case "clock":
+        return <Clock className="h-3 w-3 mr-1" />
+      case "priority":
+        return getPriorityIcon()
+      default:
+        return null
+    }
+  }
+
+  const formatFieldValue = (value: any, type: string) => {
+    if (type === "date" && value) {
+      return formatDate(value)
+    }
+    return value
+  }
+
+  const renderCardFields = (issue: Issue, cardFields?: CardField[]) => {
+    if (!cardFields || cardFields.length === 0) {
+      return (
+        <>
+          {issue.frontmatter.priority && (
+            <Badge variant="outline" className={`text-xs ${getPriorityColor(issue.frontmatter.priority)}`}>
+              {getPriorityIcon(issue.frontmatter.priority)}
+              <span className="ml-1">{issue.frontmatter.priority}</span>
+            </Badge>
+          )}
+          {issue.frontmatter.assignee && (
+            <Badge variant="outline" className="text-xs">
+              <User className="h-3 w-3 mr-1" />
+              {issue.frontmatter.assignee}
+            </Badge>
+          )}
+          {issue.frontmatter.labels &&
+            Array.isArray(issue.frontmatter.labels) &&
+            issue.frontmatter.labels.slice(0, 2).map((label: string) => (
+              <Badge key={label} variant="outline" className="text-xs">
+                <Tag className="h-3 w-3 mr-1" />
+                {label}
+              </Badge>
+            ))}
+        </>
+      )
+    }
+
+    return cardFields.map((fieldConfig) => {
+      const value = issue.frontmatter[fieldConfig.field]
+      if (!value) return null
+
+      const icon = getIconComponent(fieldConfig.icon)
+      const formattedValue = formatFieldValue(value, fieldConfig.type)
+
+      if (fieldConfig.type === "badges" && Array.isArray(value)) {
+        const maxDisplay = fieldConfig.maxDisplay || 3
+        return (
+          <div key={fieldConfig.field} className="flex flex-wrap gap-1">
+            {value.slice(0, maxDisplay).map((item: string) => (
+              <Badge key={item} variant="outline" className="text-xs">
+                {icon}
+                {item}
+              </Badge>
+            ))}
+            {value.length > maxDisplay && (
+              <Badge variant="outline" className="text-xs">
+                +{value.length - maxDisplay} more
+              </Badge>
+            )}
+          </div>
+        )
+      }
+
+      if (fieldConfig.field === "priority") {
+        return (
+          <Badge key={fieldConfig.field} variant="outline" className={`text-xs ${getPriorityColor(formattedValue)}`}>
+            {getPriorityIcon(formattedValue)}
+            <span className="ml-1">{formattedValue}</span>
+          </Badge>
+        )
+      }
+
+      return (
+        <Badge key={fieldConfig.field} variant="outline" className="text-xs">
+          {icon}
+          {formattedValue}
+        </Badge>
+      )
+    })
   }
 
   const handleIssueClick = (issue: Issue) => {
@@ -245,7 +349,7 @@ export default function BoardPage() {
                           <CardHeader className="pb-2">
                             <div className="flex items-start justify-between gap-2">
                               <CardTitle className="text-sm font-medium leading-tight">{issue.title}</CardTitle>
-                              {issue.frontmatter.priority && (
+                              {kanbanData.cardFields?.[0]?.field === "priority" && issue.frontmatter.priority && (
                                 <Badge
                                   variant="outline"
                                   className={`text-xs ${getPriorityColor(issue.frontmatter.priority)}`}
@@ -267,27 +371,7 @@ export default function BoardPage() {
 
                             {/* Issue Metadata */}
                             <div className="flex flex-wrap gap-2 mb-3">
-                              {issue.frontmatter.assignee && (
-                                <Badge variant="outline" className="text-xs">
-                                  <User className="h-3 w-3 mr-1" />
-                                  {issue.frontmatter.assignee}
-                                </Badge>
-                              )}
-                              {issue.frontmatter.labels &&
-                                Array.isArray(issue.frontmatter.labels) &&
-                                issue.frontmatter.labels.slice(0, 2).map((label: string) => (
-                                  <Badge key={label} variant="outline" className="text-xs">
-                                    <Tag className="h-3 w-3 mr-1" />
-                                    {label}
-                                  </Badge>
-                                ))}
-                              {issue.frontmatter.labels &&
-                                Array.isArray(issue.frontmatter.labels) &&
-                                issue.frontmatter.labels.length > 2 && (
-                                  <Badge variant="outline" className="text-xs">
-                                    +{issue.frontmatter.labels.length - 2} more
-                                  </Badge>
-                                )}
+                              {renderCardFields(issue, kanbanData.cardFields)}
                             </div>
 
                             {/* Issue Footer */}

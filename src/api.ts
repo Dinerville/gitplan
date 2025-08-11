@@ -26,6 +26,14 @@ export interface BoardSettings {
   globalFilters?: Record<string, any>
   sortBy?: string
   sortOrder?: "asc" | "desc"
+  cardFields?: CardField[] // Added cardFields configuration
+}
+
+export interface CardField {
+  field: string
+  type: "badge" | "badges" | "date" | "text"
+  icon?: string
+  maxDisplay?: number
 }
 
 export interface Column {
@@ -38,6 +46,7 @@ export interface Column {
 export interface KanbanBoard {
   board: Board
   columns: KanbanColumn[]
+  cardFields?: CardField[] // Added cardFields to kanban board response
 }
 
 export interface KanbanColumn {
@@ -144,7 +153,7 @@ export class GitPlanAPI {
       issues: this.filterIssuesForColumn(issues, columnConfig.filters, settings.globalFilters),
     }))
 
-    return { board, columns }
+    return { board, columns, cardFields: settings.cardFields }
   }
 
   getIssues(boardName: string): Issue[] {
@@ -217,6 +226,7 @@ export class GitPlanAPI {
           globalFilters: settings.globalFilters || {},
           sortBy: settings.sortBy || "createdAt",
           sortOrder: settings.sortOrder || "desc",
+          cardFields: settings.cardFields || undefined, // Added cardFields support
         }
       }
     } catch (error) {

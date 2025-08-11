@@ -35,5 +35,22 @@
   ],
   "globalFilters": {},
   "sortBy": "priority",
-  "sortOrder": "desc"
+  "sortOrder": "desc",
+  "cardFields": [
+    {
+      "field": "priority",
+      "type": "badge",
+      "icon": "priority"
+    },
+    {
+      "field": "category",
+      "type": "badge",
+      "icon": "tag"
+    },
+    {
+      "field": "targetDate",
+      "type": "date",
+      "icon": "calendar"
+    }
+  ]
 }

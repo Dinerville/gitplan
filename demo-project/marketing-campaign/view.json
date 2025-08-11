@@ -45,5 +45,22 @@
     "campaign": "q1-2024"
   },
   "sortBy": "createdAt",
-  "sortOrder": "desc"
+  "sortOrder": "desc",
+  "cardFields": [
+    {
+      "field": "campaign",
+      "type": "badge",
+      "icon": "tag"
+    },
+    {
+      "field": "channel",
+      "type": "badge",
+      "icon": "tag"
+    },
+    {
+      "field": "dueDate",
+      "type": "date",
+      "icon": "calendar"
+    }
+  ]
 }
