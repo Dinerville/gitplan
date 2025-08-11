@@ -44,22 +44,5 @@
   "globalFilters": {},
   "sortBy": "priority",
   "sortOrder": "desc",
-  "cardFields": [
-    {
-      "field": "priority",
-      "type": "badge",
-      "icon": "priority"
-    },
-    {
-      "field": "assignee",
-      "type": "badge",
-      "icon": "user"
-    },
-    {
-      "field": "labels",
-      "type": "badges",
-      "icon": "tag",
-      "maxDisplay": 2
-    }
-  ]
+  "cardFields": ["title", "priority", "assignee", "deadline"]
 }
