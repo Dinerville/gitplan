@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, FolderKanban, FileText, Folder, ChevronRight } from "lucide-react"
+import { Search, FolderKanban, FileText, Folder, ChevronRight, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
 
 interface Board {
@@ -33,6 +34,7 @@ export default function BoardListPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
 
   // Fetch boards
   useEffect(() => {
@@ -87,40 +89,72 @@ export default function BoardListPage() {
 
   const renderBoardCard = (board: Board) => (
     <Link key={board.id} href={`/board?id=${encodeURIComponent(board.id)}`}>
-      <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
-        <FileText className="h-4 w-4 text-muted-foreground" />
-        <div className="flex-1">
-          <div className="font-medium group-hover:text-primary transition-colors">{board.name}</div>
-          <div className="text-sm text-muted-foreground flex items-center gap-4">
-            <span>{board.issueCount} issues</span>
-            <span>{getColumnCount(board)} columns</span>
-            <span>{formatDate(board.lastModified)}</span>
+      <Card className="hover:shadow-md transition-shadow cursor-pointer group">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <FileText className="h-5 w-5 text-primary" />
+            <div className="flex-1">
+              <h3 className="font-semibold group-hover:text-primary transition-colors">{board.name}</h3>
+              <div className="text-sm text-muted-foreground flex items-center gap-4 mt-1">
+                <span>{board.issueCount} issues</span>
+                <span>{getColumnCount(board)} columns</span>
+                <span>{formatDate(board.lastModified)}</span>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-        </div>
-        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
+        </CardContent>
+      </Card>
     </Link>
   )
 
-  const renderTreeView = (groupedBoards: GroupedBoards) => {
+  const toggleSection = (sectionKey: string) => {
+    const newExpanded = new Set(expandedSections)
+    if (newExpanded.has(sectionKey)) {
+      newExpanded.delete(sectionKey)
+    } else {
+      newExpanded.add(sectionKey)
+    }
+    setExpandedSections(newExpanded)
+  }
+
+  const renderCardLayout = (groupedBoards: GroupedBoards) => {
     const rootBoards = groupedBoards["root"] || []
     const nestedGroups = Object.entries(groupedBoards).filter(([key]) => key !== "root")
 
     return (
-      <div className="space-y-1">
-        {/* Root level boards */}
+      <div className="space-y-4">
+        {/* Root level boards as cards */}
         {rootBoards.map(renderBoardCard)}
 
-        {/* Nested groups */}
-        {nestedGroups.map(([parentPath, groupBoards]) => (
-          <div key={parentPath} className="space-y-1">
-            <div className="flex items-center gap-2 py-2 text-sm font-medium text-muted-foreground">
-              <Folder className="h-4 w-4" />
-              <span className="capitalize">{parentPath.replace(/[_-]/g, " ")}</span>
+        {/* Nested groups as collapsible sections */}
+        {nestedGroups.map(([parentPath, groupBoards]) => {
+          const isExpanded = expandedSections.has(parentPath)
+          return (
+            <div key={parentPath} className="space-y-2">
+              <Button
+                variant="ghost"
+                onClick={() => toggleSection(parentPath)}
+                className="w-full justify-start p-3 h-auto hover:bg-muted/50"
+              >
+                <div className="flex items-center gap-3 w-full">
+                  {isExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <Folder className="h-5 w-5 text-primary" />
+                  <span className="font-medium capitalize">{parentPath.replace(/[_-]/g, " ")}</span>
+                  <span className="text-sm text-muted-foreground ml-auto">
+                    {groupBoards.length} board{groupBoards.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              </Button>
+
+              {isExpanded && <div className="ml-6 space-y-3">{groupBoards.map(renderBoardCard)}</div>}
             </div>
-            <div className="ml-6 space-y-1">{groupBoards.map(renderBoardCard)}</div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     )
   }
@@ -195,14 +229,14 @@ export default function BoardListPage() {
           </div>
         )}
 
-        {/* Boards Tree View */}
+        {/* Boards Card Layout */}
         {boards.length > 0 && (
-          <div className="border rounded-lg p-4 bg-card">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <div>
+            <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
               <FolderKanban className="h-5 w-5" />
               Boards
             </h2>
-            {renderTreeView(groupedBoards)}
+            {renderCardLayout(groupedBoards)}
           </div>
         )}
 
