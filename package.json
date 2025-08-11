@@ -30,7 +30,7 @@
   ],
   "scripts": {
     "build": "next build",
-    "build:cli": "tsc --project tsconfig.cli.json",
+    "build:cli": "tsc --project tsconfig.cli.json && chmod +x dist/cli.js",
     "clean": "rm -rf dist",
     "dev": "next dev",
     "dev:cli": "tsx src/cli.ts",
