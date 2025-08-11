@@ -481,28 +481,7 @@ export default function BoardPage() {
         throw new Error("Failed to update issue")
       }
 
-      // Move issue in UI and update frontmatter
-      moveIssueInUI(pendingUpdate.issueId, draggedIssue?.sourceColumnId || "", pendingUpdate.targetColumnId)
-
-      // Update the issue's frontmatter in the UI
-      setKanbanData((prev) => {
-        if (!prev) return prev
-
-        const newColumns = prev.columns.map((column) => ({
-          ...column,
-          issues: column.issues.map((issue) => {
-            if (issue.id === pendingUpdate.issueId) {
-              return {
-                ...issue,
-                frontmatter: { ...issue.frontmatter, ...pendingUpdate.updates },
-              }
-            }
-            return issue
-          }),
-        }))
-
-        return { ...prev, columns: newColumns }
-      })
+      await fetchKanbanBoard()
 
       setShowUpdateDialog(false)
       setPendingUpdate(null)
