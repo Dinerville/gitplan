@@ -82,6 +82,32 @@ export async function startServer(workingDir: string, preferredPort?: string) {
     }
   })
 
+  app.patch("/api/boards/:boardName/issues/:issueId", (req, res) => {
+    try {
+      const { boardName, issueId } = req.params
+      const { frontmatter } = req.body
+
+      if (!frontmatter || typeof frontmatter !== "object") {
+        return res.status(400).json({ error: "Invalid frontmatter data" })
+      }
+
+      const success = gitPlanAPI.updateIssue(decodeURIComponent(boardName), decodeURIComponent(issueId), {
+        frontmatter,
+      })
+
+      if (!success) {
+        return res.status(404).json({ error: "Issue not found or update failed" })
+      }
+
+      // Return the updated issue
+      const updatedIssue = gitPlanAPI.getIssue(decodeURIComponent(boardName), decodeURIComponent(issueId))
+      res.json(updatedIssue)
+    } catch (error) {
+      console.error("API Error:", error)
+      res.status(500).json({ error: "Failed to update issue" })
+    }
+  })
+
   // Serve built frontend files
   const frontendDistPath = path.join(__dirname, "../out")
   if (fs.existsSync(frontendDistPath)) {
@@ -95,7 +121,7 @@ export async function startServer(workingDir: string, preferredPort?: string) {
   }
 
   // Serve the built Next.js app
-  app.get("/", (req, res) => {
+  app.get("/*", (req, res) => {
     // Skip API routes
     if (req.path.startsWith("/api/")) {
       return res.status(404).json({ error: "API endpoint not found" })
