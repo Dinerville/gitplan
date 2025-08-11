@@ -1,12 +1,45 @@
 {
-  "name": "my-v0-project",
-  "version": "0.1.0",
-  "private": true,
+  "name": "gitplan",
+  "version": "1.0.0",
+  "private": false,
+  "description": "Git-based Kanban board system",
+  "keywords": [
+    "kanban",
+    "git",
+    "project-management",
+    "cli",
+    "markdown"
+  ],
+  "homepage": "https://github.com/yourusername/gitplan#readme",
+  "bugs": {
+    "url": "https://github.com/yourusername/gitplan/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/gitplan.git"
+  },
+  "license": "MIT",
+  "author": "Your Name",
+  "main": "dist/cli.js",
+  "bin": {
+    "gitplan": "dist/cli.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md"
+  ],
   "scripts": {
     "build": "next build",
+    "build:cli": "tsc --project tsconfig.cli.json",
+    "clean": "rm -rf dist",
     "dev": "next dev",
+    "dev:cli": "tsx src/cli.ts",
+    "link:cli": "npm run build:cli && npm link",
     "lint": "next lint",
-    "start": "next start"
+    "prepublishOnly": "npm run build:cli",
+    "start": "next start",
+    "test:cli": "npm run build:cli && node dist/cli.js",
+    "unlink:cli": "npm unlink -g gitplan"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -69,11 +102,15 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/gray-matter": "^4.0.3",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.7.0",
     "typescript": "^5"
   }
 }
