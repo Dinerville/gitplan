@@ -45,7 +45,7 @@ interface Board {
 interface KanbanBoard {
   board: Board
   columns: KanbanColumn[]
-  cardFields?: CardField[]
+  cardFields?: string[] // Simplified to array of field names
 }
 
 export default function BoardPage() {
@@ -138,74 +138,76 @@ export default function BoardPage() {
     return value
   }
 
-  const renderCardFields = (issue: Issue, cardFields?: CardField[]) => {
+  const detectValueType = (value: any): string => {
+    if (!value) return "string"
+
+    // Check if it's a date
+    if (typeof value === "string") {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+      const dateTimeRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
+      if (dateRegex.test(value) || dateTimeRegex.test(value)) {
+        return "date"
+      }
+    }
+
+    if (Array.isArray(value)) return "array"
+    if (typeof value === "boolean") return "boolean"
+    return "string"
+  }
+
+  const formatValue = (value: any, type: string): string => {
+    if (!value) return ""
+
+    switch (type) {
+      case "date":
+        return formatDate(value)
+      case "boolean":
+        return value ? "Yes" : "No"
+      case "array":
+        return Array.isArray(value) ? value.join(", ") : String(value)
+      default:
+        return String(value)
+    }
+  }
+
+  const renderCardFields = (issue: Issue, cardFields?: string[]) => {
     if (!cardFields || cardFields.length === 0) {
+      // Default fallback
       return (
         <>
           {issue.frontmatter.priority && (
-            <Badge variant="outline" className={`text-xs ${getPriorityColor(issue.frontmatter.priority)}`}>
-              {getPriorityIcon(issue.frontmatter.priority)}
-              <span className="ml-1">{issue.frontmatter.priority}</span>
-            </Badge>
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-muted-foreground">priority:</span>
+              <span>{issue.frontmatter.priority}</span>
+            </div>
           )}
           {issue.frontmatter.assignee && (
-            <Badge variant="outline" className="text-xs">
-              <User className="h-3 w-3 mr-1" />
-              {issue.frontmatter.assignee}
-            </Badge>
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-muted-foreground">assignee:</span>
+              <span>{issue.frontmatter.assignee}</span>
+            </div>
           )}
-          {issue.frontmatter.labels &&
-            Array.isArray(issue.frontmatter.labels) &&
-            issue.frontmatter.labels.slice(0, 2).map((label: string) => (
-              <Badge key={label} variant="outline" className="text-xs">
-                <Tag className="h-3 w-3 mr-1" />
-                {label}
-              </Badge>
-            ))}
         </>
       )
     }
 
-    return cardFields.map((fieldConfig) => {
-      const value = issue.frontmatter[fieldConfig.field]
+    return cardFields.map((fieldName) => {
+      const value = issue.frontmatter[fieldName]
       if (!value) return null
 
-      const icon = getIconComponent(fieldConfig.icon)
-      const formattedValue = formatFieldValue(value, fieldConfig.type)
-
-      if (fieldConfig.type === "badges" && Array.isArray(value)) {
-        const maxDisplay = fieldConfig.maxDisplay || 3
-        return (
-          <div key={fieldConfig.field} className="flex flex-wrap gap-1">
-            {value.slice(0, maxDisplay).map((item: string) => (
-              <Badge key={item} variant="outline" className="text-xs">
-                {icon}
-                {item}
-              </Badge>
-            ))}
-            {value.length > maxDisplay && (
-              <Badge variant="outline" className="text-xs">
-                +{value.length - maxDisplay} more
-              </Badge>
-            )}
-          </div>
-        )
+      // Special case for title - no key shown
+      if (fieldName === "title") {
+        return null // Title is already shown in CardTitle
       }
 
-      if (fieldConfig.field === "priority") {
-        return (
-          <Badge key={fieldConfig.field} variant="outline" className={`text-xs ${getPriorityColor(formattedValue)}`}>
-            {getPriorityIcon(formattedValue)}
-            <span className="ml-1">{formattedValue}</span>
-          </Badge>
-        )
-      }
+      const type = detectValueType(value)
+      const formattedValue = formatValue(value, type)
 
       return (
-        <Badge key={fieldConfig.field} variant="outline" className="text-xs">
-          {icon}
-          {formattedValue}
-        </Badge>
+        <div key={fieldName} className="flex justify-between items-center text-xs">
+          <span className="text-muted-foreground">{fieldName}:</span>
+          <span className="text-right">{formattedValue}</span>
+        </div>
       )
     })
   }
@@ -347,18 +349,7 @@ export default function BoardPage() {
                           onClick={() => handleIssueClick(issue)}
                         >
                           <CardHeader className="pb-2">
-                            <div className="flex items-start justify-between gap-2">
-                              <CardTitle className="text-sm font-medium leading-tight">{issue.title}</CardTitle>
-                              {kanbanData.cardFields?.[0]?.field === "priority" && issue.frontmatter.priority && (
-                                <Badge
-                                  variant="outline"
-                                  className={`text-xs ${getPriorityColor(issue.frontmatter.priority)}`}
-                                >
-                                  {getPriorityIcon(issue.frontmatter.priority)}
-                                  <span className="ml-1">{issue.frontmatter.priority}</span>
-                                </Badge>
-                              )}
-                            </div>
+                            <CardTitle className="text-sm font-medium leading-tight">{issue.title}</CardTitle>
                           </CardHeader>
                           <CardContent className="pt-0">
                             {/* Issue Content Preview */}
@@ -369,10 +360,7 @@ export default function BoardPage() {
                               </CardDescription>
                             )}
 
-                            {/* Issue Metadata */}
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              {renderCardFields(issue, kanbanData.cardFields)}
-                            </div>
+                            <div className="space-y-2 mb-3">{renderCardFields(issue, kanbanData.cardFields)}</div>
 
                             {/* Issue Footer */}
                             <div className="flex items-center justify-between text-xs text-muted-foreground">

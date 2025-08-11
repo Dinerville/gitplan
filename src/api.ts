@@ -26,7 +26,7 @@ export interface BoardSettings {
   globalFilters?: Record<string, any>
   sortBy?: string
   sortOrder?: "asc" | "desc"
-  cardFields?: CardField[] // Added cardFields configuration
+  cardFields?: string[] // Simplified to array of field names
 }
 
 export interface CardField {
@@ -46,7 +46,7 @@ export interface Column {
 export interface KanbanBoard {
   board: Board
   columns: KanbanColumn[]
-  cardFields?: CardField[] // Added cardFields to kanban board response
+  cardFields?: string[] // Simplified to array of field names
 }
 
 export interface KanbanColumn {
@@ -226,7 +226,7 @@ export class GitPlanAPI {
           globalFilters: settings.globalFilters || {},
           sortBy: settings.sortBy || "createdAt",
           sortOrder: settings.sortOrder || "desc",
-          cardFields: settings.cardFields || undefined, // Added cardFields support
+          cardFields: settings.cardFields || undefined, // Now expects array of strings
         }
       }
     } catch (error) {
