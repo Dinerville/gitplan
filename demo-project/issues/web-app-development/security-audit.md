@@ -1,11 +1,12 @@
 ---
 title: Security Audit and Fixes
-status: backlog
+status: review
 priority: high
 assignee: unassigned
-deadline: 2024-03-01
+deadline: 2024-03-01T00:00:00.000Z
 epic: security
 estimatedHours: 32
+updatedAt: '2025-08-11T23:45:00.151Z'
 ---
 
 # Security Audit and Fixes

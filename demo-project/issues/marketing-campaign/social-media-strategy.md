@@ -3,9 +3,10 @@ title: Q1 Social Media Strategy
 status: planning
 campaign: q1-2024
 channel: social-media
-dueDate: 2024-01-31
+dueDate: 2024-01-31T00:00:00.000Z
 assignee: sarah-marketing
 priority: high
+updatedAt: '2025-08-11T23:43:34.383Z'
 ---
 
 # Q1 Social Media Strategy

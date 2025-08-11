@@ -563,7 +563,7 @@ export default function BoardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-2 py-4">
+      <div className="p-6">
         <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-4">
           <Link href="/" className="hover:text-foreground transition-colors">
             Boards

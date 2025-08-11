@@ -1,11 +1,12 @@
 ---
 title: Create Responsive Dashboard
-status: todo
+status: backlog
 priority: medium
 assignee: jane-smith
-deadline: 2024-02-28
+deadline: 2024-02-28T00:00:00.000Z
 epic: dashboard
 estimatedHours: 24
+updatedAt: '2025-08-11T23:44:53.936Z'
 ---
 
 # Responsive Dashboard
