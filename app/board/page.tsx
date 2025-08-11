@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, FolderKanban, Calendar, User, Tag, AlertCircle, Clock } from "lucide-react"
+import { FolderKanban, Calendar, User, Tag, AlertCircle, Clock, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -115,14 +115,11 @@ export default function BoardPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center gap-4 mb-8">
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Boards
-              </Button>
+          <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-8">
+            <Link href="/" className="hover:text-foreground transition-colors">
+              Boards
             </Link>
-          </div>
+          </nav>
           <div className="text-center py-12">
             <FolderKanban className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No board specified</h3>
@@ -152,14 +149,13 @@ export default function BoardPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center gap-4 mb-8">
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Boards
-              </Button>
+          <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-8">
+            <Link href="/" className="hover:text-foreground transition-colors">
+              Boards
             </Link>
-          </div>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-foreground">{boardName}</span>
+          </nav>
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 text-center">
             <h2 className="text-lg font-semibold text-destructive mb-2">Error Loading Board</h2>
             <p className="text-destructive mb-4">{error}</p>
@@ -176,14 +172,13 @@ export default function BoardPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center gap-4 mb-8">
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Boards
-              </Button>
+          <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-8">
+            <Link href="/" className="hover:text-foreground transition-colors">
+              Boards
             </Link>
-          </div>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-foreground">{boardName}</span>
+          </nav>
           <div className="text-center py-12">
             <FolderKanban className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Board not found</h3>
@@ -199,13 +194,14 @@ export default function BoardPage() {
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Boards
-              </Button>
-            </Link>
+          <div className="flex flex-col gap-4">
+            <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
+              <Link href="/" className="hover:text-foreground transition-colors">
+                Boards
+              </Link>
+              <ChevronRight className="h-4 w-4" />
+              <span className="text-foreground">{kanbanData.board.name}</span>
+            </nav>
             <div className="flex items-center gap-3">
               <FolderKanban className="h-6 w-6 text-primary" />
               <div>
