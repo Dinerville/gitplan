@@ -34,12 +34,12 @@
     "clean": "rm -rf dist",
     "dev": "next dev",
     "dev:cli": "tsx src/cli.ts",
-    "link:cli": "npm run build:cli && npm link",
+    "link:cli": "yarn build:cli && yarn link",
     "lint": "next lint",
-    "prepublishOnly": "npm run build:cli",
+    "prepublishOnly": "yarn build:cli",
     "start": "next start",
-    "test:cli": "npm run build:cli && node dist/cli.js",
-    "unlink:cli": "npm unlink -g gitplan"
+    "test:cli": "yarn build:cli && node dist/cli.js",
+    "unlink:cli": "yarn unlink gitplan"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
