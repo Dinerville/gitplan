@@ -293,7 +293,12 @@ export class GitPlanAPI {
 
   private parseBoardSettings(settings: any): BoardSettings {
     return {
-      columns: settings.columns || [],
+      columns: (settings.columns || []).map((col: any) => ({
+        id: col.id || col.name?.toLowerCase().replace(/\s+/g, "-") || "untitled",
+        title: col.title || col.name || "Untitled Column",
+        filters: col.filters || {},
+        color: col.color,
+      })),
       boardFilters: settings.boardFilters || settings.globalFilters || {},
       sortBy: settings.sortBy || "createdAt",
       sortOrder: settings.sortOrder || "desc",
