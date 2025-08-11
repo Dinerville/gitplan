@@ -13,10 +13,12 @@ GitPlan is a Git-based Kanban board system that uses your file system as a datab
 
 ## Installation
 
-Install GitPlan globally via npm:
+Install GitPlan globally via npm or yarn:
 
 \`\`\`bash
 npm install -g gitplan
+# or
+yarn global add gitplan
 \`\`\`
 
 ## Usage
@@ -177,6 +179,8 @@ cd gitplan
 
 # Install dependencies
 npm install
+# or
+yarn install
 \`\`\`
 
 ### CLI Development
@@ -184,18 +188,28 @@ npm install
 \`\`\`bash
 # Build the CLI
 npm run build:cli
+# or
+yarn build:cli
 
 # Run CLI in development mode (with hot reload)
 npm run dev:cli
+# or
+yarn dev:cli
 
 # Test CLI locally (installs globally for testing)
 npm run link:cli
+# or
+yarn link:cli
 
 # Remove local CLI installation
 npm run unlink:cli
+# or
+yarn unlink:cli
 
 # Test the CLI
 npm run test:cli
+# or
+yarn test:cli
 \`\`\`
 
 ### Frontend Development
@@ -203,12 +217,18 @@ npm run test:cli
 \`\`\`bash
 # Start Next.js development server
 npm run dev
+# or
+yarn dev
 
 # Build for production
 npm run build
+# or
+yarn build
 
 # Start production server
 npm start
+# or
+yarn start
 \`\`\`
 
 ### Publishing
@@ -216,6 +236,8 @@ npm start
 \`\`\`bash
 # Build everything and publish to npm
 npm publish
+# or
+yarn publish
 \`\`\`
 
 The CLI will be available as `gitplan` command globally after installation.
