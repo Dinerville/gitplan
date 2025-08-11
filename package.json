@@ -104,7 +104,6 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
-    "@types/gray-matter": "^4.0.3",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
