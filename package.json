@@ -38,7 +38,7 @@
     "lint": "next lint",
     "prepublishOnly": "yarn build:cli",
     "start": "next start",
-    "test:cli": "yarn build:cli && node dist/cli.js",
+    "cli": "yarn build && yarn build:cli && cd demo-project && node ../dist/cli.js",
     "unlink:cli": "yarn unlink gitplan"
   },
   "dependencies": {
