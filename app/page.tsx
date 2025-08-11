@@ -1,12 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Grid3X3, List, FolderKanban, Calendar, FileText, Folder, ChevronRight } from "lucide-react"
+import { Search, FolderKanban, FileText, Folder, ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { useMobile } from "@/hooks/use-mobile"
 import Link from "next/link"
 
 interface Board {
@@ -34,15 +31,8 @@ interface GroupedBoards {
 export default function BoardListPage() {
   const [boards, setBoards] = useState<Board[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const isMobile = useMobile()
-
-  // Set default view based on device
-  useEffect(() => {
-    setViewMode(isMobile ? "grid" : "list")
-  }, [isMobile])
 
   // Fetch boards
   useEffect(() => {
@@ -54,7 +44,6 @@ export default function BoardListPage() {
       setLoading(true)
       const params = new URLSearchParams()
       if (searchQuery) params.append("search", searchQuery)
-      params.append("view", viewMode)
 
       const response = await fetch(`/api/boards?${params}`)
       if (!response.ok) throw new Error("Failed to fetch boards")
@@ -98,30 +87,18 @@ export default function BoardListPage() {
 
   const renderBoardCard = (board: Board) => (
     <Link key={board.id} href={`/board?id=${encodeURIComponent(board.id)}`}>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-        <CardHeader className={viewMode === "list" ? "pb-3" : ""}>
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg mb-1">{board.name}</CardTitle>
-              <CardDescription className="flex items-center gap-4 text-sm">
-                <span className="flex items-center gap-1">
-                  <FileText className="h-3 w-3" />
-                  {board.issueCount} issues
-                </span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {formatDate(board.lastModified)}
-                </span>
-              </CardDescription>
-            </div>
-            {viewMode === "grid" && (
-              <Badge variant="secondary" className="ml-2">
-                {getColumnCount(board)} columns
-              </Badge>
-            )}
+      <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
+        <FileText className="h-4 w-4 text-muted-foreground" />
+        <div className="flex-1">
+          <div className="font-medium group-hover:text-primary transition-colors">{board.name}</div>
+          <div className="text-sm text-muted-foreground flex items-center gap-4">
+            <span>{board.issueCount} issues</span>
+            <span>{getColumnCount(board)} columns</span>
+            <span>{formatDate(board.lastModified)}</span>
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+      </div>
     </Link>
   )
 
@@ -130,32 +107,18 @@ export default function BoardListPage() {
     const nestedGroups = Object.entries(groupedBoards).filter(([key]) => key !== "root")
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-1">
         {/* Root level boards */}
-        {rootBoards.length > 0 && (
-          <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
-            {rootBoards.map(renderBoardCard)}
-          </div>
-        )}
+        {rootBoards.map(renderBoardCard)}
 
         {/* Nested groups */}
         {nestedGroups.map(([parentPath, groupBoards]) => (
-          <div key={parentPath} className="space-y-4">
-            <div className="flex items-center gap-2 text-lg font-semibold text-foreground border-b pb-2">
-              <Folder className="h-5 w-5 text-muted-foreground" />
+          <div key={parentPath} className="space-y-1">
+            <div className="flex items-center gap-2 py-2 text-sm font-medium text-muted-foreground">
+              <Folder className="h-4 w-4" />
               <span className="capitalize">{parentPath.replace(/[_-]/g, " ")}</span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              <Badge variant="outline" className="text-xs">
-                {groupBoards.length} board{groupBoards.length !== 1 ? "s" : ""}
-              </Badge>
             </div>
-            <div
-              className={
-                viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ml-6" : "space-y-4 ml-6"
-              }
-            >
-              {groupBoards.map(renderBoardCard)}
-            </div>
+            <div className="ml-6 space-y-1">{groupBoards.map(renderBoardCard)}</div>
           </div>
         ))}
       </div>
@@ -202,16 +165,6 @@ export default function BoardListPage() {
               className="pl-10"
             />
           </div>
-          <div className="flex gap-2">
-            <Button variant={viewMode === "grid" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grid")}>
-              <Grid3X3 className="h-4 w-4" />
-              <span className="hidden sm:inline ml-2">Grid</span>
-            </Button>
-            <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")}>
-              <List className="h-4 w-4" />
-              <span className="hidden sm:inline ml-2">List</span>
-            </Button>
-          </div>
         </div>
 
         {/* Error State */}
@@ -243,7 +196,15 @@ export default function BoardListPage() {
         )}
 
         {/* Boards Tree View */}
-        {boards.length > 0 && renderTreeView(groupedBoards)}
+        {boards.length > 0 && (
+          <div className="border rounded-lg p-4 bg-card">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <FolderKanban className="h-5 w-5" />
+              Boards
+            </h2>
+            {renderTreeView(groupedBoards)}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
