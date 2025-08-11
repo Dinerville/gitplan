@@ -1,0 +1,49 @@
+{
+  "columns": [
+    {
+      "id": "ideas",
+      "title": "Ideas",
+      "color": "#ec4899",
+      "filters": {
+        "status": "idea"
+      }
+    },
+    {
+      "id": "planning",
+      "title": "Planning",
+      "color": "#f59e0b",
+      "filters": {
+        "status": "planning"
+      }
+    },
+    {
+      "id": "in-progress",
+      "title": "In Progress",
+      "color": "#3b82f6",
+      "filters": {
+        "status": "in-progress"
+      }
+    },
+    {
+      "id": "review",
+      "title": "Review",
+      "color": "#8b5cf6",
+      "filters": {
+        "status": "review"
+      }
+    },
+    {
+      "id": "published",
+      "title": "Published",
+      "color": "#10b981",
+      "filters": {
+        "status": "published"
+      }
+    }
+  ],
+  "globalFilters": {
+    "campaign": "q1-2024"
+  },
+  "sortBy": "createdAt",
+  "sortOrder": "desc"
+}

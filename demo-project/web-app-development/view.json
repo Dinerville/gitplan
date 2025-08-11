@@ -1,0 +1,47 @@
+{
+  "columns": [
+    {
+      "id": "backlog",
+      "title": "Backlog",
+      "color": "#6b7280",
+      "filters": {
+        "status": "backlog"
+      }
+    },
+    {
+      "id": "todo",
+      "title": "To Do",
+      "color": "#3b82f6",
+      "filters": {
+        "status": "todo"
+      }
+    },
+    {
+      "id": "in-progress",
+      "title": "In Progress",
+      "color": "#f59e0b",
+      "filters": {
+        "status": "in-progress"
+      }
+    },
+    {
+      "id": "review",
+      "title": "Code Review",
+      "color": "#8b5cf6",
+      "filters": {
+        "status": "review"
+      }
+    },
+    {
+      "id": "done",
+      "title": "Done",
+      "color": "#10b981",
+      "filters": {
+        "status": "done"
+      }
+    }
+  ],
+  "globalFilters": {},
+  "sortBy": "priority",
+  "sortOrder": "desc"
+}
