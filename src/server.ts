@@ -68,10 +68,10 @@ export async function startServer(workingDir: string, preferredPort?: string) {
     }
   })
 
-  // Serve Next.js static files
-  const nextDistPath = path.join(__dirname, "../.next")
-  if (fs.existsSync(nextDistPath)) {
-    app.use("/_next", express.static(path.join(nextDistPath, "static")))
+  // Serve built frontend files
+  const frontendDistPath = path.join(__dirname, "../out")
+  if (fs.existsSync(frontendDistPath)) {
+    app.use(express.static(frontendDistPath))
   }
 
   // Serve public files
@@ -81,8 +81,13 @@ export async function startServer(workingDir: string, preferredPort?: string) {
   }
 
   // Serve the built Next.js app
-  app.get("*", (req, res) => {
-    const indexPath = path.join(__dirname, "../app/index.html")
+  app.get("/*", (req, res) => {
+    // Skip API routes
+    if (req.path.startsWith("/api/")) {
+      return res.status(404).json({ error: "API endpoint not found" })
+    }
+
+    const indexPath = path.join(__dirname, "../out/index.html")
     if (fs.existsSync(indexPath)) {
       res.sendFile(indexPath)
     } else {
@@ -93,11 +98,18 @@ export async function startServer(workingDir: string, preferredPort?: string) {
             <title>GitPlan</title>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+              body { font-family: system-ui, sans-serif; padding: 2rem; text-align: center; }
+              .error { color: #dc2626; }
+              .info { color: #2563eb; }
+            </style>
           </head>
           <body>
             <div id="root">
-              <h1>GitPlan is starting...</h1>
-              <p>Please build the project first with: npm run build</p>
+              <h1>GitPlan</h1>
+              <p class="error">Frontend not built yet</p>
+              <p class="info">Please run: <code>yarn build</code> to build the frontend</p>
+              <p>Working directory: <code>${workingDir}</code></p>
             </div>
           </body>
         </html>
