@@ -163,18 +163,62 @@ gitplan
 
 ## Development
 
-To run GitPlan in development mode:
+### Prerequisites
+
+- Node.js 18+ 
+- npm or yarn
+
+### Setup
 
 \`\`\`bash
+# Clone the repository
+git clone <repository-url>
+cd gitplan
+
 # Install dependencies
 npm install
+\`\`\`
 
+### CLI Development
+
+\`\`\`bash
 # Build the CLI
 npm run build:cli
 
-# Start development server
-npm run dev
+# Run CLI in development mode (with hot reload)
+npm run dev:cli
+
+# Test CLI locally (installs globally for testing)
+npm run link:cli
+
+# Remove local CLI installation
+npm run unlink:cli
+
+# Test the CLI
+npm run test:cli
 \`\`\`
+
+### Frontend Development
+
+\`\`\`bash
+# Start Next.js development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+\`\`\`
+
+### Publishing
+
+\`\`\`bash
+# Build everything and publish to npm
+npm publish
+\`\`\`
+
+The CLI will be available as `gitplan` command globally after installation.
 
 ## License
 
