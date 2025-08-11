@@ -1,14 +1,17 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { FolderKanban, Calendar, User, Tag, AlertCircle, Clock, ChevronRight } from "lucide-react"
+import { FolderKanban, Calendar, User, Tag, AlertCircle, Clock, ChevronRight, Save, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { IssueDetail } from "@/components/issue-detail"
 
 interface Issue {
@@ -40,6 +43,12 @@ interface Board {
   path: string
   issueCount: number
   lastModified?: string
+  settings?: {
+    columns: {
+      id: string
+      filters: Record<string, any>
+    }[]
+  }
 }
 
 interface KanbanBoard {
@@ -47,6 +56,17 @@ interface KanbanBoard {
   columns: KanbanColumn[]
   cardFields?: string[] // Simplified to array of field names
   boardFilters?: Record<string, any> // renamed from globalFilters
+}
+
+interface DraggedIssue {
+  issue: Issue
+  sourceColumnId: string
+}
+
+interface UpdatePreview {
+  key: string
+  currentValue: any
+  newValue: any
 }
 
 export default function BoardPage() {
@@ -58,6 +78,16 @@ export default function BoardPage() {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [boardFilters, setBoardFilters] = useState<Record<string, any>>({}) // renamed from globalFilters
+  const [draggedIssue, setDraggedIssue] = useState<DraggedIssue | null>(null)
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
+  const [updatePreview, setUpdatePreview] = useState<UpdatePreview[]>([])
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false)
+  const [pendingUpdate, setPendingUpdate] = useState<{
+    issueId: string
+    targetColumnId: string
+    updates: Record<string, any>
+  } | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
     if (boardName) {
@@ -158,19 +188,11 @@ export default function BoardPage() {
     return "string"
   }
 
-  const formatValue = (value: any, type: string): string => {
-    if (!value) return ""
-
-    switch (type) {
-      case "date":
-        return formatDate(value)
-      case "boolean":
-        return value ? "Yes" : "No"
-      case "array":
-        return Array.isArray(value) ? value.join(", ") : String(value)
-      default:
-        return String(value)
-    }
+  const formatValue = (value: any): string => {
+    if (value === null || value === undefined) return "None"
+    if (typeof value === "boolean") return value ? "Yes" : "No"
+    if (Array.isArray(value)) return value.join(", ")
+    return String(value)
   }
 
   const renderCardFields = (issue: Issue, cardFields?: string[]) => {
@@ -238,7 +260,7 @@ export default function BoardPage() {
 
       // Regular frontmatter fields
       const type = detectValueType(value)
-      const formattedValue = formatValue(value, type)
+      const formattedValue = formatValue(value)
 
       return (
         <div key={fieldName} className="flex justify-between items-center text-xs">
@@ -267,7 +289,7 @@ export default function BoardPage() {
         <div className="flex flex-wrap gap-2">
           {Object.entries(boardFilters).map(([key, value]) => {
             const type = detectValueType(value)
-            const formattedValue = formatValue(value, type)
+            const formattedValue = formatValue(value)
 
             return (
               <Badge key={key} variant="outline" className="text-xs">
@@ -279,6 +301,224 @@ export default function BoardPage() {
         </div>
       </div>
     )
+  }
+
+  const handleDragStart = (e: React.DragEvent, issue: Issue, columnId: string) => {
+    setDraggedIssue({ issue, sourceColumnId: columnId })
+    e.dataTransfer.effectAllowed = "move"
+  }
+
+  const handleDragOver = (e: React.DragEvent, columnId: string) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
+    setDragOverColumn(columnId)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only clear if we're leaving the column entirely
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverColumn(null)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent, targetColumnId: string) => {
+    e.preventDefault()
+    setDragOverColumn(null)
+
+    if (!draggedIssue || draggedIssue.sourceColumnId === targetColumnId) {
+      setDraggedIssue(null)
+      return
+    }
+
+    // Find target column configuration
+    const targetColumn = kanbanData?.columns.find((col) => col.id === targetColumnId)
+    if (!targetColumn || !kanbanData) {
+      setDraggedIssue(null)
+      return
+    }
+
+    // Calculate what needs to be updated
+    const updates = calculateRequiredUpdates(draggedIssue.issue, targetColumn, kanbanData)
+
+    if (Object.keys(updates).length === 0) {
+      // No updates needed, just move the issue
+      moveIssueInUI(draggedIssue.issue.id, draggedIssue.sourceColumnId, targetColumnId)
+      setDraggedIssue(null)
+      return
+    }
+
+    // Show update preview dialog
+    const preview = Object.entries(updates).map(([key, newValue]) => ({
+      key,
+      currentValue: draggedIssue.issue.frontmatter[key],
+      newValue,
+    }))
+
+    setUpdatePreview(preview)
+    setPendingUpdate({
+      issueId: draggedIssue.issue.id,
+      targetColumnId,
+      updates,
+    })
+    setShowUpdateDialog(true)
+    setDraggedIssue(null)
+  }
+
+  const calculateRequiredUpdates = (
+    issue: Issue,
+    targetColumn: KanbanColumn,
+    kanbanData: KanbanBoard,
+  ): Record<string, any> => {
+    const updates: Record<string, any> = {}
+
+    // Find the column configuration from board settings
+    const board = kanbanData.board
+    if (!board.settings?.columns) return updates
+
+    const targetColumnConfig = board.settings.columns.find((col) => col.id === targetColumn.id)
+    if (!targetColumnConfig) return updates
+
+    // Check each filter in the target column
+    Object.entries(targetColumnConfig.filters).forEach(([key, filterValue]) => {
+      const currentValue = issue.frontmatter[key]
+
+      // If the current value doesn't match the filter, we need to update it
+      if (!matchesFilterValue(currentValue, filterValue)) {
+        // Determine the new value based on filter type
+        const newValue = getNewValueFromFilter(filterValue)
+        if (newValue !== undefined) {
+          updates[key] = newValue
+        }
+      }
+    })
+
+    return updates
+  }
+
+  const matchesFilterValue = (currentValue: any, filterValue: any): boolean => {
+    if (typeof filterValue === "string") {
+      return String(currentValue || "").toLowerCase() === filterValue.toLowerCase()
+    }
+    if (Array.isArray(filterValue)) {
+      return filterValue.includes(currentValue)
+    }
+    if (typeof filterValue === "object" && filterValue !== null) {
+      if (filterValue.$in) {
+        return filterValue.$in.includes(currentValue)
+      }
+    }
+    return currentValue === filterValue
+  }
+
+  const getNewValueFromFilter = (filterValue: any): any => {
+    if (typeof filterValue === "string") {
+      return filterValue
+    }
+    if (Array.isArray(filterValue) && filterValue.length > 0) {
+      return filterValue[0] // Use first value in array
+    }
+    if (typeof filterValue === "object" && filterValue !== null) {
+      if (filterValue.$in && Array.isArray(filterValue.$in) && filterValue.$in.length > 0) {
+        return filterValue.$in[0]
+      }
+    }
+    return filterValue
+  }
+
+  const moveIssueInUI = (issueId: string, sourceColumnId: string, targetColumnId: string) => {
+    if (!kanbanData) return
+
+    setKanbanData((prev) => {
+      if (!prev) return prev
+
+      const newColumns = prev.columns.map((column) => {
+        if (column.id === sourceColumnId) {
+          // Remove issue from source column
+          return {
+            ...column,
+            issues: column.issues.filter((issue) => issue.id !== issueId),
+          }
+        }
+        if (column.id === targetColumnId) {
+          // Add issue to target column
+          const issue = prev.columns
+            .find((col) => col.id === sourceColumnId)
+            ?.issues.find((issue) => issue.id === issueId)
+
+          if (issue) {
+            return {
+              ...column,
+              issues: [...column.issues, issue],
+            }
+          }
+        }
+        return column
+      })
+
+      return { ...prev, columns: newColumns }
+    })
+  }
+
+  const handleConfirmUpdate = async () => {
+    if (!pendingUpdate) return
+
+    setIsUpdating(true)
+    try {
+      const response = await fetch(
+        `/api/boards/${encodeURIComponent(boardName)}/issues/${encodeURIComponent(pendingUpdate.issueId)}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            frontmatter: pendingUpdate.updates,
+          }),
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error("Failed to update issue")
+      }
+
+      // Move issue in UI and update frontmatter
+      moveIssueInUI(pendingUpdate.issueId, draggedIssue?.sourceColumnId || "", pendingUpdate.targetColumnId)
+
+      // Update the issue's frontmatter in the UI
+      setKanbanData((prev) => {
+        if (!prev) return prev
+
+        const newColumns = prev.columns.map((column) => ({
+          ...column,
+          issues: column.issues.map((issue) => {
+            if (issue.id === pendingUpdate.issueId) {
+              return {
+                ...issue,
+                frontmatter: { ...issue.frontmatter, ...pendingUpdate.updates },
+              }
+            }
+            return issue
+          }),
+        }))
+
+        return { ...prev, columns: newColumns }
+      })
+
+      setShowUpdateDialog(false)
+      setPendingUpdate(null)
+      setUpdatePreview([])
+    } catch (error) {
+      console.error("Error updating issue:", error)
+      // You might want to show an error toast here
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleCancelUpdate = () => {
+    setShowUpdateDialog(false)
+    setPendingUpdate(null)
+    setUpdatePreview([])
   }
 
   if (!boardName) {
@@ -388,8 +628,18 @@ export default function BoardPage() {
         {/* Kanban Board */}
         <div className="flex gap-6 overflow-x-auto pb-6">
           {kanbanData.columns.map((column) => (
-            <div key={column.id} className="flex-shrink-0 w-80">
-              <div className="bg-muted/30 rounded-lg p-4">
+            <div
+              key={column.id}
+              className="flex-shrink-0 w-80"
+              onDragOver={(e) => handleDragOver(e, column.id)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, column.id)}
+            >
+              <div
+                className={`bg-muted/30 rounded-lg p-4 transition-colors ${
+                  dragOverColumn === column.id ? "bg-primary/10 border-2 border-primary/20" : ""
+                }`}
+              >
                 {/* Column Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -405,12 +655,16 @@ export default function BoardPage() {
                 <ScrollArea className="h-[calc(100vh-200px)]">
                   <div className="space-y-3">
                     {column.issues.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground text-sm">No issues in this column</div>
+                      <div className="text-center py-8 text-muted-foreground text-sm">
+                        {dragOverColumn === column.id ? "Drop issue here" : "No issues in this column"}
+                      </div>
                     ) : (
                       column.issues.map((issue) => (
                         <Card
                           key={issue.id}
-                          className="hover:shadow-sm transition-shadow cursor-pointer"
+                          className="hover:shadow-sm transition-shadow cursor-pointer select-none"
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, issue, column.id)}
                           onClick={() => handleIssueClick(issue)}
                         >
                           <CardContent className="p-4">
@@ -447,6 +701,42 @@ export default function BoardPage() {
           {selectedIssue && <IssueDetail issue={selectedIssue} boardName={boardName} showOpenInNewTab={true} />}
         </SheetContent>
       </Sheet>
+
+      {/* Update Confirmation Dialog */}
+      <Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Issue Update</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">Moving this issue will update the following fields:</p>
+            <div className="space-y-3">
+              {updatePreview.map((update, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="space-y-1">
+                    <div className="text-sm font-medium text-muted-foreground">{update.key}</div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-muted-foreground">{formatValue(update.currentValue)}</span>
+                      <span className="text-muted-foreground">→</span>
+                      <span className="font-medium">{formatValue(update.newValue)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={handleCancelUpdate} disabled={isUpdating}>
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmUpdate} disabled={isUpdating}>
+              <Save className="h-4 w-4 mr-2" />
+              {isUpdating ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -172,6 +172,42 @@ export class GitPlanAPI {
     return issues.find((issue) => issue.id === issueId) || null
   }
 
+  updateIssue(boardName: string, issueId: string, updates: { frontmatter?: Record<string, any> }): boolean {
+    try {
+      const issue = this.getIssue(boardName, issueId)
+      if (!issue) {
+        throw new Error(`Issue ${issueId} not found`)
+      }
+
+      const boardPath = path.join(this.workingDir, boardName)
+      const filePath = path.join(boardPath, issue.relativePath)
+
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`File ${filePath} not found`)
+      }
+
+      // Read current file content
+      const content = fs.readFileSync(filePath, "utf-8")
+      const parsed = matter(content)
+
+      // Update frontmatter
+      if (updates.frontmatter) {
+        Object.assign(parsed.data, updates.frontmatter)
+        // Update the updatedAt timestamp
+        parsed.data.updatedAt = new Date().toISOString()
+      }
+
+      // Write back to file
+      const updatedContent = matter.stringify(parsed.content, parsed.data)
+      fs.writeFileSync(filePath, updatedContent, "utf-8")
+
+      return true
+    } catch (error) {
+      console.error(`Error updating issue ${issueId}:`, error)
+      return false
+    }
+  }
+
   private getIssuesFromPath(boardPath: string): Issue[] {
     try {
       const issues: Issue[] = []
