@@ -155,7 +155,7 @@ export default function BoardListPage() {
         {boards.length > 0 && (
           <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
             {boards.map((board) => (
-              <Link key={board.name} href={`/board/${encodeURIComponent(board.name)}`}>
+              <Link key={board.name} href={`/board?name=${encodeURIComponent(board.name)}`}>
                 <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
                   <CardHeader className={viewMode === "list" ? "pb-3" : ""}>
                     <div className="flex items-start justify-between">

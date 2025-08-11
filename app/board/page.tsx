@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, FolderKanban, Calendar, User, Tag, AlertCircle, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -39,14 +39,16 @@ interface KanbanBoard {
 }
 
 export default function BoardPage() {
-  const params = useParams()
-  const boardName = decodeURIComponent(params.boardName as string)
+  const searchParams = useSearchParams()
+  const boardName = searchParams.get("name") || ""
   const [kanbanData, setKanbanData] = useState<KanbanBoard | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchKanbanBoard()
+    if (boardName) {
+      fetchKanbanBoard()
+    }
   }, [boardName])
 
   const fetchKanbanBoard = async () => {
@@ -65,6 +67,28 @@ export default function BoardPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!boardName) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center gap-4 mb-8">
+            <Link href="/">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Boards
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center py-12">
+            <FolderKanban className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No board specified</h3>
+            <p className="text-muted-foreground">Please select a board from the board list.</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const formatDate = (dateString?: string) => {
