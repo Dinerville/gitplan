@@ -39,10 +39,13 @@ interface KanbanColumn {
 }
 
 interface Board {
-  name: string
-  path: string
+  name: string // Display name from view file
+  id: string // Unique identifier
+  path: string // Path to issues folder
+  viewPath: string // Path to view file
   issueCount: number
   lastModified?: string
+  parentPath?: string // For nested boards
   settings?: {
     columns: {
       id: string
@@ -71,7 +74,7 @@ interface UpdatePreview {
 
 export default function BoardPage() {
   const searchParams = useSearchParams()
-  const boardName = searchParams.get("name") || ""
+  const boardId = searchParams.get("name") || ""
   const [kanbanData, setKanbanData] = useState<KanbanBoard | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -90,15 +93,15 @@ export default function BoardPage() {
   const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
-    if (boardName) {
+    if (boardId) {
       fetchKanbanBoard()
     }
-  }, [boardName])
+  }, [boardId])
 
   const fetchKanbanBoard = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/boards/${encodeURIComponent(boardName)}/kanban`)
+      const response = await fetch(`/api/boards/${encodeURIComponent(boardId)}/kanban`)
       if (!response.ok) {
         throw new Error(`Failed to fetch board: ${response.statusText}`)
       }
@@ -277,7 +280,6 @@ export default function BoardPage() {
   }
 
   const renderBoardFilters = () => {
-    // renamed from renderGlobalFilters
     if (!boardFilters || Object.keys(boardFilters).length === 0) {
       return null
     }
@@ -285,7 +287,6 @@ export default function BoardPage() {
     return (
       <div className="mb-6 p-4 bg-muted/30 rounded-lg">
         <h3 className="text-sm font-medium text-muted-foreground mb-3">Board Filters</h3>{" "}
-        {/* renamed from Global Filters */}
         <div className="flex flex-wrap gap-2">
           {Object.entries(boardFilters).map(([key, value]) => {
             const type = detectValueType(value)
@@ -315,7 +316,6 @@ export default function BoardPage() {
   }
 
   const handleDragLeave = (e: React.DragEvent) => {
-    // Only clear if we're leaving the column entirely
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
       setDragOverColumn(null)
     }
@@ -330,24 +330,20 @@ export default function BoardPage() {
       return
     }
 
-    // Find target column configuration
     const targetColumn = kanbanData?.columns.find((col) => col.id === targetColumnId)
     if (!targetColumn || !kanbanData) {
       setDraggedIssue(null)
       return
     }
 
-    // Calculate what needs to be updated
     const updates = calculateRequiredUpdates(draggedIssue.issue, targetColumn, kanbanData)
 
     if (Object.keys(updates).length === 0) {
-      // No updates needed, just move the issue
       moveIssueInUI(draggedIssue.issue.id, draggedIssue.sourceColumnId, targetColumnId)
       setDraggedIssue(null)
       return
     }
 
-    // Show update preview dialog
     const preview = Object.entries(updates).map(([key, newValue]) => ({
       key,
       currentValue: draggedIssue.issue.frontmatter[key],
@@ -371,20 +367,16 @@ export default function BoardPage() {
   ): Record<string, any> => {
     const updates: Record<string, any> = {}
 
-    // Find the column configuration from board settings
     const board = kanbanData.board
     if (!board.settings?.columns) return updates
 
     const targetColumnConfig = board.settings.columns.find((col) => col.id === targetColumn.id)
     if (!targetColumnConfig) return updates
 
-    // Check each filter in the target column
     Object.entries(targetColumnConfig.filters).forEach(([key, filterValue]) => {
       const currentValue = issue.frontmatter[key]
 
-      // If the current value doesn't match the filter, we need to update it
       if (!matchesFilterValue(currentValue, filterValue)) {
-        // Determine the new value based on filter type
         const newValue = getNewValueFromFilter(filterValue)
         if (newValue !== undefined) {
           updates[key] = newValue
@@ -415,7 +407,7 @@ export default function BoardPage() {
       return filterValue
     }
     if (Array.isArray(filterValue) && filterValue.length > 0) {
-      return filterValue[0] // Use first value in array
+      return filterValue[0]
     }
     if (typeof filterValue === "object" && filterValue !== null) {
       if (filterValue.$in && Array.isArray(filterValue.$in) && filterValue.$in.length > 0) {
@@ -433,14 +425,12 @@ export default function BoardPage() {
 
       const newColumns = prev.columns.map((column) => {
         if (column.id === sourceColumnId) {
-          // Remove issue from source column
           return {
             ...column,
             issues: column.issues.filter((issue) => issue.id !== issueId),
           }
         }
         if (column.id === targetColumnId) {
-          // Add issue to target column
           const issue = prev.columns
             .find((col) => col.id === sourceColumnId)
             ?.issues.find((issue) => issue.id === issueId)
@@ -465,7 +455,7 @@ export default function BoardPage() {
     setIsUpdating(true)
     try {
       const response = await fetch(
-        `/api/boards/${encodeURIComponent(boardName)}/issues/${encodeURIComponent(pendingUpdate.issueId)}`,
+        `/api/boards/${encodeURIComponent(boardId)}/issues/${encodeURIComponent(pendingUpdate.issueId)}`,
         {
           method: "PATCH",
           headers: {
@@ -488,7 +478,6 @@ export default function BoardPage() {
       setUpdatePreview([])
     } catch (error) {
       console.error("Error updating issue:", error)
-      // You might want to show an error toast here
     } finally {
       setIsUpdating(false)
     }
@@ -500,10 +489,10 @@ export default function BoardPage() {
     setUpdatePreview([])
   }
 
-  if (!boardName) {
+  if (!boardId) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="px-4 py-4">
+        <div className="container mx-auto px-2 py-4">
           <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-8">
             <Link href="/" className="hover:text-foreground transition-colors">
               Boards
@@ -522,7 +511,7 @@ export default function BoardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="px-4 py-4">
+        <div className="container mx-auto px-2 py-4">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -537,18 +526,14 @@ export default function BoardPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="px-4 py-4">
-          <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-8">
-            <Link href="/" className="hover:text-foreground transition-colors">
-              Boards
-            </Link>
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-foreground">{boardName}</span>
-          </nav>
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 text-center">
-            <h2 className="text-lg font-semibold text-destructive mb-2">Error Loading Board</h2>
+        <div className="container mx-auto px-2 py-4">
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 max-w-md mx-auto mt-8">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              <h3 className="font-semibold text-destructive">Error Loading Board</h3>
+            </div>
             <p className="text-destructive mb-4">{error}</p>
-            <Button variant="outline" onClick={fetchKanbanBoard}>
+            <Button variant="outline" onClick={fetchKanbanBoard} className="bg-transparent">
               Try Again
             </Button>
           </div>
@@ -560,53 +545,49 @@ export default function BoardPage() {
   if (!kanbanData) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="px-4 py-4">
-          <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-8">
-            <Link href="/" className="hover:text-foreground transition-colors">
-              Boards
-            </Link>
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-foreground">{boardName}</span>
-          </nav>
+        <div className="container mx-auto px-2 py-4">
           <div className="text-center py-12">
             <FolderKanban className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Board not found</h3>
-            <p className="text-muted-foreground">The requested board could not be found.</p>
+            <h3 className="text-lg font-semibold mb-2">Board Not Found</h3>
+            <p className="text-muted-foreground mb-4">The board "{boardId}" could not be found.</p>
+            <Link href="/">
+              <Button variant="outline">Back to Boards</Button>
+            </Link>
           </div>
         </div>
       </div>
     )
   }
 
+  const { board, columns } = kanbanData
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex flex-col gap-4">
-            <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
-              <Link href="/" className="hover:text-foreground transition-colors">
-                Boards
-              </Link>
-              <ChevronRight className="h-4 w-4" />
-              <span className="text-foreground">{kanbanData.board.name}</span>
-            </nav>
-            <div className="flex items-center gap-3">
-              <FolderKanban className="h-6 w-6 text-primary" />
-              <div>
-                <h1 className="text-2xl font-bold">{kanbanData.board.name}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {kanbanData.board.issueCount} issues across {kanbanData.columns.length} columns
-                </p>
-              </div>
+      <div className="container mx-auto px-2 py-4">
+        <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-4">
+          <Link href="/" className="hover:text-foreground transition-colors">
+            Boards
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-foreground font-medium">{board.name}</span>
+        </nav>
+
+        {Object.keys(boardFilters).length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">Board Filters</h3>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(boardFilters).map(([key, value]) => (
+                <Badge key={key} variant="secondary" className="text-xs">
+                  <span className="text-muted-foreground">{key}:</span>
+                  <span className="ml-1">{formatValue(value)}</span>
+                </Badge>
+              ))}
             </div>
           </div>
-        </div>
-        {/* Board Filters */} {/* renamed from Global Filters */}
-        {renderBoardFilters()}
-        {/* Kanban Board */}
+        )}
+
         <div className="flex gap-6 overflow-x-auto pb-6">
-          {kanbanData.columns.map((column) => (
+          {columns.map((column) => (
             <div
               key={column.id}
               className="flex-shrink-0 w-80"
@@ -619,7 +600,6 @@ export default function BoardPage() {
                   dragOverColumn === column.id ? "bg-primary/10 border-2 border-primary/20" : ""
                 }`}
               >
-                {/* Column Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: column.color || "#6b7280" }} />
@@ -630,7 +610,6 @@ export default function BoardPage() {
                   </div>
                 </div>
 
-                {/* Issues */}
                 <ScrollArea className="h-[calc(100vh-200px)]">
                   <div className="space-y-3">
                     {column.issues.length === 0 ? (
@@ -658,8 +637,8 @@ export default function BoardPage() {
             </div>
           ))}
         </div>
-        {/* Empty State */}
-        {kanbanData.columns.length === 0 && (
+
+        {columns.length === 0 && (
           <div className="text-center py-12">
             <FolderKanban className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No columns configured</h3>
@@ -671,17 +650,15 @@ export default function BoardPage() {
         )}
       </div>
 
-      {/* Issue Detail Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent className="w-[90vw] sm:w-[75vw] sm:max-w-none">
           <SheetHeader>
             <SheetTitle className="sr-only">Issue Details</SheetTitle>
           </SheetHeader>
-          {selectedIssue && <IssueDetail issue={selectedIssue} boardName={boardName} showOpenInNewTab={true} />}
+          {selectedIssue && <IssueDetail issue={selectedIssue} boardName={boardId} showOpenInNewTab={true} />}
         </SheetContent>
       </Sheet>
 
-      {/* Update Confirmation Dialog */}
       <Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

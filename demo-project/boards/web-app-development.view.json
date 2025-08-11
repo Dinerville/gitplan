@@ -1,48 +1,46 @@
 {
+  "name": "Web App Development",
+  "path": "web-app-development",
   "columns": [
     {
-      "id": "backlog",
-      "title": "Backlog",
+      "name": "Backlog",
       "color": "#6b7280",
       "filters": {
         "status": "backlog"
       }
     },
     {
-      "id": "todo",
-      "title": "To Do",
+      "name": "To Do",
       "color": "#3b82f6",
       "filters": {
         "status": "todo"
       }
     },
     {
-      "id": "in-progress",
-      "title": "In Progress",
+      "name": "In Progress",
       "color": "#f59e0b",
       "filters": {
         "status": "in-progress"
       }
     },
     {
-      "id": "review",
-      "title": "Code Review",
+      "name": "Code Review",
       "color": "#8b5cf6",
       "filters": {
         "status": "review"
       }
     },
     {
-      "id": "done",
-      "title": "Done",
+      "name": "Done",
       "color": "#10b981",
       "filters": {
         "status": "done"
       }
     }
   ],
-  "boardFilters": {},
-  "sortBy": "priority",
-  "sortOrder": "desc",
-  "cardFields": ["title", "priority", "assignee", "deadline"]
+  "boardFilters": {
+    "priority": ["high", "medium", "low"]
+  },
+  "cardFields": ["title", "priority", "assignee", "deadline"],
+  "sortBy": "priority"
 }

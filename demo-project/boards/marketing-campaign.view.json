@@ -1,40 +1,37 @@
 {
+  "name": "Marketing Campaign",
+  "path": "marketing-campaign",
   "columns": [
     {
-      "id": "ideas",
-      "title": "Ideas",
-      "color": "#ec4899",
+      "name": "Ideas",
+      "color": "#6b7280",
       "filters": {
         "status": "idea"
       }
     },
     {
-      "id": "planning",
-      "title": "Planning",
-      "color": "#f59e0b",
+      "name": "Planning",
+      "color": "#3b82f6",
       "filters": {
         "status": "planning"
       }
     },
     {
-      "id": "in-progress",
-      "title": "In Progress",
-      "color": "#3b82f6",
+      "name": "In Progress",
+      "color": "#f59e0b",
       "filters": {
         "status": "in-progress"
       }
     },
     {
-      "id": "review",
-      "title": "Review",
+      "name": "Review",
       "color": "#8b5cf6",
       "filters": {
         "status": "review"
       }
     },
     {
-      "id": "published",
-      "title": "Published",
+      "name": "Published",
       "color": "#10b981",
       "filters": {
         "status": "published"
@@ -44,7 +41,6 @@
   "boardFilters": {
     "campaign": "q1-2024"
   },
-  "sortBy": "createdAt",
-  "sortOrder": "desc",
-  "cardFields": ["title", "campaign", "channel", "dueDate"]
+  "cardFields": ["title", "campaign", "channel", "dueDate"],
+  "sortBy": "dueDate"
 }

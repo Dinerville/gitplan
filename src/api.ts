@@ -14,11 +14,14 @@ export interface Issue {
 }
 
 export interface Board {
-  name: string
-  path: string
+  name: string // Display name from view file
+  id: string // Unique identifier (filename without extension)
+  path: string // Path to issues folder
+  viewPath: string // Path to view file
   issueCount: number
   settings?: BoardSettings
   lastModified?: Date
+  parentPath?: string // For nested boards (e.g., "personal" for "personal/goals.view.json")
 }
 
 export interface BoardSettings {
@@ -62,23 +65,17 @@ export class GitPlanAPI {
 
   getBoards(searchQuery?: string): Board[] {
     try {
-      const items = fs.readdirSync(this.workingDir, { withFileTypes: true })
-      const boards = items
-        .filter((item) => item.isDirectory() && !item.name.startsWith("."))
-        .map((dir) => {
-          const boardPath = path.join(this.workingDir, dir.name)
-          const issues = this.getIssuesFromPath(boardPath)
-          const stats = fs.statSync(boardPath)
+      const boardsPath = path.join(this.workingDir, "boards")
+      const issuesPath = path.join(this.workingDir, "issues")
 
-          return {
-            name: dir.name,
-            path: boardPath,
-            issueCount: issues.length,
-            settings: this.getBoardSettings(boardPath),
-            lastModified: stats.mtime,
-          }
-        })
-        .sort((a, b) => (b.lastModified?.getTime() || 0) - (a.lastModified?.getTime() || 0))
+      if (!fs.existsSync(boardsPath)) {
+        console.error("Boards directory not found")
+        return []
+      }
+
+      const boards = this.readBoardsRecursively(boardsPath, boardsPath, issuesPath).sort(
+        (a, b) => (b.lastModified?.getTime() || 0) - (a.lastModified?.getTime() || 0),
+      )
 
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
@@ -98,30 +95,64 @@ export class GitPlanAPI {
     }
   }
 
-  getBoard(boardName: string): Board | null {
-    const boardPath = path.join(this.workingDir, boardName)
+  private readBoardsRecursively(currentPath: string, boardsRoot: string, issuesRoot: string): Board[] {
+    const boards: Board[] = []
+    const files = fs.readdirSync(currentPath)
 
-    if (!fs.existsSync(boardPath) || !fs.statSync(boardPath).isDirectory()) {
-      return null
+    for (const file of files) {
+      const filePath = path.join(currentPath, file)
+      const stats = fs.statSync(filePath)
+
+      if (stats.isDirectory()) {
+        // Recursively read subdirectories
+        boards.push(...this.readBoardsRecursively(filePath, boardsRoot, issuesRoot))
+      } else if (file.endsWith(".view.json")) {
+        try {
+          const content = fs.readFileSync(filePath, "utf-8")
+          const settings = JSON.parse(content)
+
+          // Generate board ID from relative path
+          const relativePath = path.relative(boardsRoot, filePath)
+          const boardId = relativePath.replace(/\.view\.json$/, "").replace(/[/\\]/g, "-")
+
+          // Determine parent path for nested boards
+          const parentDir = path.dirname(relativePath)
+          const parentPath = parentDir !== "." ? parentDir : undefined
+
+          // Determine issues path
+          const issuesPath = settings.path ? path.join(issuesRoot, settings.path) : issuesRoot
+
+          const issues = fs.existsSync(issuesPath) ? this.getIssuesFromPath(issuesPath) : []
+
+          boards.push({
+            name: settings.name || path.parse(file).name,
+            id: boardId,
+            path: issuesPath,
+            viewPath: filePath,
+            issueCount: issues.length,
+            settings: this.parseBoardSettings(settings),
+            lastModified: stats.mtime,
+            parentPath,
+          })
+        } catch (error) {
+          console.error(`Error reading board file ${filePath}:`, error)
+        }
+      }
     }
 
-    const issues = this.getIssuesFromPath(boardPath)
-    const stats = fs.statSync(boardPath)
-
-    return {
-      name: boardName,
-      path: boardPath,
-      issueCount: issues.length,
-      settings: this.getBoardSettings(boardPath),
-      lastModified: stats.mtime,
-    }
+    return boards
   }
 
-  getKanbanBoard(boardName: string): KanbanBoard | null {
-    const board = this.getBoard(boardName)
+  getBoard(boardId: string): Board | null {
+    const boards = this.getBoards()
+    return boards.find((board) => board.id === boardId) || null
+  }
+
+  getKanbanBoard(boardId: string): KanbanBoard | null {
+    const board = this.getBoard(boardId)
     if (!board) return null
 
-    const issues = this.getIssues(boardName)
+    const issues = this.getIssuesFromPath(board.path)
     const settings = board.settings
 
     // If no settings, create default columns
@@ -158,29 +189,34 @@ export class GitPlanAPI {
       board,
       columns,
       cardFields: settings.cardFields,
-      boardFilters: settings.boardFilters, // renamed from globalFilters
+      boardFilters: settings.boardFilters,
     }
   }
 
-  getIssues(boardName: string): Issue[] {
-    const boardPath = path.join(this.workingDir, boardName)
-    return this.getIssuesFromPath(boardPath)
+  getIssues(boardId: string): Issue[] {
+    const board = this.getBoard(boardId)
+    if (!board) return []
+    return this.getIssuesFromPath(board.path)
   }
 
-  getIssue(boardName: string, issueId: string): Issue | null {
-    const issues = this.getIssues(boardName)
+  getIssue(boardId: string, issueId: string): Issue | null {
+    const issues = this.getIssues(boardId)
     return issues.find((issue) => issue.id === issueId) || null
   }
 
-  updateIssue(boardName: string, issueId: string, updates: { frontmatter?: Record<string, any> }): boolean {
+  updateIssue(boardId: string, issueId: string, updates: { frontmatter?: Record<string, any> }): boolean {
     try {
-      const issue = this.getIssue(boardName, issueId)
+      const issue = this.getIssue(boardId, issueId)
       if (!issue) {
         throw new Error(`Issue ${issueId} not found`)
       }
 
-      const boardPath = path.join(this.workingDir, boardName)
-      const filePath = path.join(boardPath, issue.relativePath)
+      const board = this.getBoard(boardId)
+      if (!board) {
+        throw new Error(`Board ${boardId} not found`)
+      }
+
+      const filePath = path.join(board.path, issue.relativePath)
 
       if (!fs.existsSync(filePath)) {
         throw new Error(`File ${filePath} not found`)
@@ -255,27 +291,14 @@ export class GitPlanAPI {
     }
   }
 
-  private getBoardSettings(boardPath: string): BoardSettings | undefined {
-    try {
-      const viewPath = path.join(boardPath, "view.json")
-      if (fs.existsSync(viewPath)) {
-        const content = fs.readFileSync(viewPath, "utf-8")
-        const settings = JSON.parse(content)
-
-        // Validate and set defaults
-        return {
-          columns: settings.columns || [],
-          boardFilters: settings.boardFilters || settings.globalFilters || {}, // support both names for backward compatibility
-          sortBy: settings.sortBy || "createdAt",
-          sortOrder: settings.sortOrder || "desc",
-          cardFields: settings.cardFields || undefined, // Now expects array of strings
-        }
-      }
-    } catch (error) {
-      console.error(`Error reading board settings from ${boardPath}:`, error)
+  private parseBoardSettings(settings: any): BoardSettings {
+    return {
+      columns: settings.columns || [],
+      boardFilters: settings.boardFilters || settings.globalFilters || {},
+      sortBy: settings.sortBy || "createdAt",
+      sortOrder: settings.sortOrder || "desc",
+      cardFields: settings.cardFields || undefined,
     }
-
-    return undefined
   }
 
   private filterIssuesForColumn(

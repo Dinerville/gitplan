@@ -1,0 +1,39 @@
+{
+  "name": "Personal Goals",
+  "path": "personal-goals",
+  "columns": [
+    {
+      "name": "Someday/Maybe",
+      "color": "#6b7280",
+      "filters": {
+        "status": "someday"
+      }
+    },
+    {
+      "name": "Next Actions",
+      "color": "#3b82f6",
+      "filters": {
+        "status": "next"
+      }
+    },
+    {
+      "name": "Waiting For",
+      "color": "#f59e0b",
+      "filters": {
+        "status": "waiting"
+      }
+    },
+    {
+      "name": "Completed",
+      "color": "#10b981",
+      "filters": {
+        "status": "completed"
+      }
+    }
+  ],
+  "boardFilters": {
+    "priority": ["high", "medium", "low"]
+  },
+  "cardFields": ["title", "deadline", "assignedTo"],
+  "sortBy": "priority"
+}

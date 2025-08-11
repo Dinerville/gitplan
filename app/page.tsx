@@ -1,19 +1,22 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Grid3X3, List, FolderKanban, Calendar, FileText } from "lucide-react"
+import { Search, Grid3X3, List, FolderKanban, Calendar, FileText, Folder, ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useMobile } from "@/hooks/use-mobile"
 import Link from "next/link"
 
 interface Board {
-  name: string
-  path: string
+  name: string // Display name from view file
+  id: string // Unique identifier
+  path: string // Path to issues folder
+  viewPath: string // Path to view file
   issueCount: number
   lastModified?: string
+  parentPath?: string // For nested boards
   settings?: {
     columns: Array<{ id: string; title: string; color?: string }>
   }
@@ -22,6 +25,10 @@ interface Board {
 interface BoardsResponse {
   boards: Board[]
   view: string
+}
+
+interface GroupedBoards {
+  [key: string]: Board[]
 }
 
 export default function BoardListPage() {
@@ -62,6 +69,20 @@ export default function BoardListPage() {
     }
   }
 
+  const groupBoardsByParent = (boards: Board[]): GroupedBoards => {
+    const grouped: GroupedBoards = {}
+
+    boards.forEach((board) => {
+      const key = board.parentPath || "root"
+      if (!grouped[key]) {
+        grouped[key] = []
+      }
+      grouped[key].push(board)
+    })
+
+    return grouped
+  }
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Unknown"
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -73,6 +94,72 @@ export default function BoardListPage() {
 
   const getColumnCount = (board: Board) => {
     return board.settings?.columns?.length || 3
+  }
+
+  const renderBoardCard = (board: Board) => (
+    <Link key={board.id} href={`/board?name=${encodeURIComponent(board.id)}`}>
+      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+        <CardHeader className={viewMode === "list" ? "pb-3" : ""}>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-lg mb-1">{board.name}</CardTitle>
+              <CardDescription className="flex items-center gap-4 text-sm">
+                <span className="flex items-center gap-1">
+                  <FileText className="h-3 w-3" />
+                  {board.issueCount} issues
+                </span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {formatDate(board.lastModified)}
+                </span>
+              </CardDescription>
+            </div>
+            {viewMode === "grid" && (
+              <Badge variant="secondary" className="ml-2">
+                {getColumnCount(board)} columns
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+      </Card>
+    </Link>
+  )
+
+  const renderTreeView = (groupedBoards: GroupedBoards) => {
+    const rootBoards = groupedBoards["root"] || []
+    const nestedGroups = Object.entries(groupedBoards).filter(([key]) => key !== "root")
+
+    return (
+      <div className="space-y-6">
+        {/* Root level boards */}
+        {rootBoards.length > 0 && (
+          <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
+            {rootBoards.map(renderBoardCard)}
+          </div>
+        )}
+
+        {/* Nested groups */}
+        {nestedGroups.map(([parentPath, groupBoards]) => (
+          <div key={parentPath} className="space-y-4">
+            <div className="flex items-center gap-2 text-lg font-semibold text-foreground border-b pb-2">
+              <Folder className="h-5 w-5 text-muted-foreground" />
+              <span className="capitalize">{parentPath.replace(/[_-]/g, " ")}</span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <Badge variant="outline" className="text-xs">
+                {groupBoards.length} board{groupBoards.length !== 1 ? "s" : ""}
+              </Badge>
+            </div>
+            <div
+              className={
+                viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ml-6" : "space-y-4 ml-6"
+              }
+            >
+              {groupBoards.map(renderBoardCard)}
+            </div>
+          </div>
+        ))}
+      </div>
+    )
   }
 
   if (loading) {
@@ -89,6 +176,8 @@ export default function BoardListPage() {
       </div>
     )
   }
+
+  const groupedBoards = groupBoardsByParent(boards)
 
   return (
     <div className="min-h-screen bg-background">
@@ -141,7 +230,9 @@ export default function BoardListPage() {
             <FolderKanban className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No boards found</h3>
             <p className="text-muted-foreground mb-4">
-              {searchQuery ? `No boards match "${searchQuery}"` : "Create folders in this directory to get started"}
+              {searchQuery
+                ? `No boards match "${searchQuery}"`
+                : "Create view files in the boards directory to get started"}
             </p>
             {searchQuery && (
               <Button variant="outline" onClick={() => setSearchQuery("")}>
@@ -151,39 +242,8 @@ export default function BoardListPage() {
           </div>
         )}
 
-        {/* Boards Grid/List */}
-        {boards.length > 0 && (
-          <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
-            {boards.map((board) => (
-              <Link key={board.name} href={`/board?name=${encodeURIComponent(board.name)}`}>
-                <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                  <CardHeader className={viewMode === "list" ? "pb-3" : ""}>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg mb-1">{board.name}</CardTitle>
-                        <CardDescription className="flex items-center gap-4 text-sm">
-                          <span className="flex items-center gap-1">
-                            <FileText className="h-3 w-3" />
-                            {board.issueCount} issues
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {formatDate(board.lastModified)}
-                          </span>
-                        </CardDescription>
-                      </div>
-                      {viewMode === "grid" && (
-                        <Badge variant="secondary" className="ml-2">
-                          {getColumnCount(board)} columns
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
+        {/* Boards Tree View */}
+        {boards.length > 0 && renderTreeView(groupedBoards)}
 
         {/* Footer */}
         <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
