@@ -106,14 +106,17 @@ export class GitPlanAPI {
       if (stats.isDirectory()) {
         // Recursively read subdirectories
         boards.push(...this.readBoardsRecursively(filePath, boardsRoot, issuesRoot))
-      } else if (file.endsWith(".view.json")) {
+      } else if (file.endsWith(".view.json") || file === "view.json") {
         try {
           const content = fs.readFileSync(filePath, "utf-8")
           const settings = JSON.parse(content)
 
           // Generate board ID from relative path
           const relativePath = path.relative(boardsRoot, filePath)
-          const boardId = relativePath.replace(/\.view\.json$/, "").replace(/[/\\]/g, "-")
+          const boardId = relativePath
+            .replace(/\.view\.json$/, "")
+            .replace(/\/view\.json$/, "")
+            .replace(/[/\\]/g, "-")
 
           // Determine parent path for nested boards
           const parentDir = path.dirname(relativePath)
