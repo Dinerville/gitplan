@@ -6,6 +6,7 @@ category: learning
 labels: ["language", "personal-development"]
 createdAt: 2024-01-20
 targetDate: 2024-06-30
+deadline: 21-07-2026
 ---
 
 # Learn Spanish to Conversational Level

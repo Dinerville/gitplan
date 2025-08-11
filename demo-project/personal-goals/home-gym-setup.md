@@ -6,6 +6,7 @@ category: fitness
 labels: ["fitness", "home-improvement"]
 createdAt: 2024-01-15
 waitingFor: "Equipment delivery"
+deadline: 20-07-2026
 ---
 
 # Home Gym Setup
