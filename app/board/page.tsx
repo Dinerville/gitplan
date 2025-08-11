@@ -46,6 +46,7 @@ interface KanbanBoard {
   board: Board
   columns: KanbanColumn[]
   cardFields?: string[] // Simplified to array of field names
+  globalFilters?: Record<string, any>
 }
 
 export default function BoardPage() {
@@ -56,6 +57,7 @@ export default function BoardPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [globalFilters, setGlobalFilters] = useState<Record<string, any>>({})
 
   useEffect(() => {
     if (boardName) {
@@ -73,6 +75,7 @@ export default function BoardPage() {
 
       const data: KanbanBoard = await response.json()
       setKanbanData(data)
+      setGlobalFilters(data.globalFilters || {})
       setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load board")
@@ -251,6 +254,31 @@ export default function BoardPage() {
     setIsSheetOpen(true)
   }
 
+  const renderGlobalFilters = () => {
+    if (!globalFilters || Object.keys(globalFilters).length === 0) {
+      return null
+    }
+
+    return (
+      <div className="mb-6 p-4 bg-muted/30 rounded-lg">
+        <h3 className="text-sm font-medium text-muted-foreground mb-3">Global Filters</h3>
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(globalFilters).map(([key, value]) => {
+            const type = detectValueType(value)
+            const formattedValue = formatValue(value, type)
+
+            return (
+              <Badge key={key} variant="outline" className="text-xs">
+                <span className="text-muted-foreground">{key}:</span>
+                <span className="ml-1">{formattedValue}</span>
+              </Badge>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
   if (!boardName) {
     return (
       <div className="min-h-screen bg-background">
@@ -353,6 +381,9 @@ export default function BoardPage() {
             </div>
           </div>
         </div>
+
+        {/* Global Filters */}
+        {renderGlobalFilters()}
 
         {/* Kanban Board */}
         <div className="flex gap-6 overflow-x-auto pb-6">

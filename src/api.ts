@@ -47,6 +47,7 @@ export interface KanbanBoard {
   board: Board
   columns: KanbanColumn[]
   cardFields?: string[] // Simplified to array of field names
+  globalFilters?: Record<string, any>
 }
 
 export interface KanbanColumn {
@@ -153,7 +154,12 @@ export class GitPlanAPI {
       issues: this.filterIssuesForColumn(issues, columnConfig.filters, settings.globalFilters),
     }))
 
-    return { board, columns, cardFields: settings.cardFields }
+    return {
+      board,
+      columns,
+      cardFields: settings.cardFields,
+      globalFilters: settings.globalFilters,
+    }
   }
 
   getIssues(boardName: string): Issue[] {
