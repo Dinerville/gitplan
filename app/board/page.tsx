@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { IssueDetail } from "@/components/issue-detail"
 
 interface Issue {
   id: string
@@ -44,6 +46,8 @@ export default function BoardPage() {
   const [kanbanData, setKanbanData] = useState<KanbanBoard | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
 
   useEffect(() => {
     if (boardName) {
@@ -67,28 +71,6 @@ export default function BoardPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  if (!boardName) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center gap-4 mb-8">
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Boards
-              </Button>
-            </Link>
-          </div>
-          <div className="text-center py-12">
-            <FolderKanban className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No board specified</h3>
-            <p className="text-muted-foreground">Please select a board from the board list.</p>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   const formatDate = (dateString?: string) => {
@@ -122,6 +104,33 @@ export default function BoardPage() {
       default:
         return <Clock className="h-3 w-3" />
     }
+  }
+
+  const handleIssueClick = (issue: Issue) => {
+    setSelectedIssue(issue)
+    setIsSheetOpen(true)
+  }
+
+  if (!boardName) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center gap-4 mb-8">
+            <Link href="/">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Boards
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center py-12">
+            <FolderKanban className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No board specified</h3>
+            <p className="text-muted-foreground">Please select a board from the board list.</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {
@@ -232,7 +241,11 @@ export default function BoardPage() {
                       <div className="text-center py-8 text-muted-foreground text-sm">No issues in this column</div>
                     ) : (
                       column.issues.map((issue) => (
-                        <Card key={issue.id} className="hover:shadow-sm transition-shadow cursor-pointer">
+                        <Card
+                          key={issue.id}
+                          className="hover:shadow-sm transition-shadow cursor-pointer"
+                          onClick={() => handleIssueClick(issue)}
+                        >
                           <CardHeader className="pb-2">
                             <div className="flex items-start justify-between gap-2">
                               <CardTitle className="text-sm font-medium leading-tight">{issue.title}</CardTitle>
@@ -312,6 +325,16 @@ export default function BoardPage() {
           </div>
         )}
       </div>
+
+      {/* Issue Detail Sheet */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent className="w-[90vw] sm:w-[75vw] sm:max-w-none">
+          <SheetHeader>
+            <SheetTitle className="sr-only">Issue Details</SheetTitle>
+          </SheetHeader>
+          {selectedIssue && <IssueDetail issue={selectedIssue} boardName={boardName} showOpenInNewTab={true} />}
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
