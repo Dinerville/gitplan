@@ -1,12 +1,15 @@
 ---
 title: Set Up Home Gym
-status: waiting
+status: done
 priority: medium
 category: fitness
-labels: ["fitness", "home-improvement"]
-createdAt: 2024-01-15
-waitingFor: "Equipment delivery"
+labels:
+  - fitness
+  - home-improvement
+createdAt: 2024-01-15T00:00:00.000Z
+waitingFor: Equipment delivery
 assignedTo: dima.naumau
+updatedAt: '2025-08-11T22:46:49.230Z'
 ---
 
 # Home Gym Setup

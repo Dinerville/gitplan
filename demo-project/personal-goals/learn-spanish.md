@@ -1,12 +1,15 @@
 ---
 title: Learn Spanish Conversational Level
-status: next
+status: someday
 priority: high
 category: learning
-labels: ["language", "personal-development"]
-createdAt: 2024-01-20
-targetDate: 2024-06-30
+labels:
+  - language
+  - personal-development
+createdAt: 2024-01-20T00:00:00.000Z
+targetDate: 2024-06-30T00:00:00.000Z
 assignedTo: dima.naumau
+updatedAt: '2025-08-11T22:46:26.223Z'
 ---
 
 # Learn Spanish to Conversational Level
