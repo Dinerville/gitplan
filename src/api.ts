@@ -152,6 +152,11 @@ export class GitPlanAPI {
     return this.getIssuesFromPath(boardPath)
   }
 
+  getIssue(boardName: string, issueId: string): Issue | null {
+    const issues = this.getIssues(boardName)
+    return issues.find((issue) => issue.id === issueId) || null
+  }
+
   private getIssuesFromPath(boardPath: string): Issue[] {
     try {
       const issues: Issue[] = []
