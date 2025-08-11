@@ -68,6 +68,20 @@ export async function startServer(workingDir: string, preferredPort?: string) {
     }
   })
 
+  app.get("/api/boards/:boardName/issues/:issueId", (req, res) => {
+    try {
+      const { boardName, issueId } = req.params
+      const issue = gitPlanAPI.getIssue(decodeURIComponent(boardName), decodeURIComponent(issueId))
+      if (!issue) {
+        return res.status(404).json({ error: "Issue not found" })
+      }
+      res.json(issue)
+    } catch (error) {
+      console.error("API Error:", error)
+      res.status(500).json({ error: "Failed to fetch issue" })
+    }
+  })
+
   // Serve built frontend files
   const frontendDistPath = path.join(__dirname, "../out")
   if (fs.existsSync(frontendDistPath)) {
