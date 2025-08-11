@@ -70,5 +70,5 @@ Implement comprehensive email marketing automation to nurture leads and retain c
 - GDPR compliance measures
 \`\`\`
 
-```typescriptreact file="demo-project/personal-goals/view.json" isDeleted="true"
+\`\`\`typescriptreact file="demo-project/personal-goals/view.json" isDeleted="true"
 ...deleted...

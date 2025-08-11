@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { FolderKanban } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { IssueDetail } from "@/components/issue-detail"
 
@@ -17,24 +17,43 @@ interface Issue {
   updatedAt?: string
 }
 
+interface Board {
+  name: string
+  id: string
+}
+
 export default function IssuePage() {
   const searchParams = useSearchParams()
-  const boardName = searchParams.get("board") || ""
+  const boardId = searchParams.get("board") || ""
   const issueId = searchParams.get("id") || ""
   const [issue, setIssue] = useState<Issue | null>(null)
+  const [board, setBoard] = useState<Board | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (boardName && issueId) {
+    if (boardId && issueId) {
       fetchIssue()
+      fetchBoard()
     }
-  }, [boardName, issueId])
+  }, [boardId, issueId])
+
+  const fetchBoard = async () => {
+    try {
+      const response = await fetch(`/api/boards/${encodeURIComponent(boardId)}`)
+      if (response.ok) {
+        const boardData: Board = await response.json()
+        setBoard(boardData)
+      }
+    } catch (err) {
+      console.error("Failed to fetch board:", err)
+    }
+  }
 
   const fetchIssue = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/boards/${encodeURIComponent(boardName)}/issues/${encodeURIComponent(issueId)}`)
+      const response = await fetch(`/api/boards/${encodeURIComponent(boardId)}/issues/${encodeURIComponent(issueId)}`)
       if (!response.ok) {
         throw new Error(`Failed to fetch issue: ${response.statusText}`)
       }
@@ -49,13 +68,13 @@ export default function IssuePage() {
     }
   }
 
-  if (!boardName || !issueId) {
+  if (!boardId || !issueId) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-12">
             <h3 className="text-lg font-semibold mb-2">Invalid issue URL</h3>
-            <p className="text-muted-foreground">Board name and issue ID are required.</p>
+            <p className="text-muted-foreground">Board ID and issue ID are required.</p>
           </div>
         </div>
       </div>
@@ -81,15 +100,15 @@ export default function IssuePage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-            <Link href="/" className="hover:text-foreground">
+          <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
+            <Link href="/" className="hover:text-foreground transition-colors">
               Boards
             </Link>
-            <span>/</span>
-            <Link href={`/board?name=${encodeURIComponent(boardName)}`} className="hover:text-foreground">
-              {boardName}
+            <ChevronRight className="h-4 w-4" />
+            <Link href={`/board?id=${encodeURIComponent(boardId)}`} className="hover:text-foreground transition-colors">
+              {board?.name || boardId}
             </Link>
-            <span>/</span>
+            <ChevronRight className="h-4 w-4" />
             <span>Issue</span>
           </nav>
 
@@ -108,25 +127,21 @@ export default function IssuePage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+        <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
           <Link href="/" className="hover:text-foreground transition-colors">
             Boards
           </Link>
-          <span>/</span>
-          <Link
-            href={`/board?name=${encodeURIComponent(boardName)}`}
-            className="hover:text-foreground flex items-center gap-1 transition-colors"
-          >
-            <FolderKanban className="h-3 w-3" />
-            {boardName}
+          <ChevronRight className="h-4 w-4" />
+          <Link href={`/board?id=${encodeURIComponent(boardId)}`} className="hover:text-foreground transition-colors">
+            {board?.name || boardId}
           </Link>
-          <span>/</span>
+          <ChevronRight className="h-4 w-4" />
           <span className="text-foreground font-medium">{issue.title}</span>
         </nav>
 
         {/* Issue Detail */}
         <div className="h-[calc(100vh-160px)]">
-          <IssueDetail issue={issue} boardName={boardName} showOpenInNewTab={false} />
+          <IssueDetail issue={issue} boardName={boardId} showOpenInNewTab={false} />
         </div>
       </div>
     </div>

@@ -74,7 +74,7 @@ interface UpdatePreview {
 
 export default function BoardPage() {
   const searchParams = useSearchParams()
-  const boardId = searchParams.get("name") || ""
+  const boardId = searchParams.get("id")
   const [kanbanData, setKanbanData] = useState<KanbanBoard | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -99,12 +99,12 @@ export default function BoardPage() {
   }, [boardId])
 
   const fetchKanbanBoard = async () => {
+    if (!boardId) return
+
     try {
       setLoading(true)
       const response = await fetch(`/api/boards/${encodeURIComponent(boardId)}/kanban`)
-      if (!response.ok) {
-        throw new Error(`Failed to fetch board: ${response.statusText}`)
-      }
+      if (!response.ok) throw new Error("Failed to fetch board")
 
       const data: KanbanBoard = await response.json()
       setKanbanData(data)

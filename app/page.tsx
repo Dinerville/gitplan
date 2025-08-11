@@ -97,7 +97,7 @@ export default function BoardListPage() {
   }
 
   const renderBoardCard = (board: Board) => (
-    <Link key={board.id} href={`/board?name=${encodeURIComponent(board.id)}`}>
+    <Link key={board.id} href={`/board?id=${encodeURIComponent(board.id)}`}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
         <CardHeader className={viewMode === "list" ? "pb-3" : ""}>
           <div className="flex items-start justify-between">
