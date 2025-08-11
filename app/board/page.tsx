@@ -46,7 +46,7 @@ interface KanbanBoard {
   board: Board
   columns: KanbanColumn[]
   cardFields?: string[] // Simplified to array of field names
-  globalFilters?: Record<string, any>
+  boardFilters?: Record<string, any> // renamed from globalFilters
 }
 
 export default function BoardPage() {
@@ -57,7 +57,7 @@ export default function BoardPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const [globalFilters, setGlobalFilters] = useState<Record<string, any>>({})
+  const [boardFilters, setBoardFilters] = useState<Record<string, any>>({}) // renamed from globalFilters
 
   useEffect(() => {
     if (boardName) {
@@ -75,7 +75,7 @@ export default function BoardPage() {
 
       const data: KanbanBoard = await response.json()
       setKanbanData(data)
-      setGlobalFilters(data.globalFilters || {})
+      setBoardFilters(data.boardFilters || {}) // renamed from globalFilters
       setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load board")
@@ -254,16 +254,18 @@ export default function BoardPage() {
     setIsSheetOpen(true)
   }
 
-  const renderGlobalFilters = () => {
-    if (!globalFilters || Object.keys(globalFilters).length === 0) {
+  const renderBoardFilters = () => {
+    // renamed from renderGlobalFilters
+    if (!boardFilters || Object.keys(boardFilters).length === 0) {
       return null
     }
 
     return (
       <div className="mb-6 p-4 bg-muted/30 rounded-lg">
-        <h3 className="text-sm font-medium text-muted-foreground mb-3">Global Filters</h3>
+        <h3 className="text-sm font-medium text-muted-foreground mb-3">Board Filters</h3>{" "}
+        {/* renamed from Global Filters */}
         <div className="flex flex-wrap gap-2">
-          {Object.entries(globalFilters).map(([key, value]) => {
+          {Object.entries(boardFilters).map(([key, value]) => {
             const type = detectValueType(value)
             const formattedValue = formatValue(value, type)
 
@@ -381,10 +383,8 @@ export default function BoardPage() {
             </div>
           </div>
         </div>
-
-        {/* Global Filters */}
-        {renderGlobalFilters()}
-
+        {/* Board Filters */} {/* renamed from Global Filters */}
+        {renderBoardFilters()}
         {/* Kanban Board */}
         <div className="flex gap-6 overflow-x-auto pb-6">
           {kanbanData.columns.map((column) => (
@@ -425,7 +425,6 @@ export default function BoardPage() {
             </div>
           ))}
         </div>
-
         {/* Empty State */}
         {kanbanData.columns.length === 0 && (
           <div className="text-center py-12">

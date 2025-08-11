@@ -41,7 +41,7 @@
       }
     }
   ],
-  "globalFilters": {
+  "boardFilters": {
     "campaign": "q1-2024"
   },
   "sortBy": "createdAt",

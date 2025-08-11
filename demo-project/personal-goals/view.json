@@ -33,7 +33,7 @@
       }
     }
   ],
-  "globalFilters": {},
+  "boardFilters": {},
   "sortBy": "priority",
   "sortOrder": "desc",
   "cardFields": ["title", "deadline", "assignedTo"]

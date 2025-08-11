@@ -23,7 +23,7 @@ export interface Board {
 
 export interface BoardSettings {
   columns: Column[]
-  globalFilters?: Record<string, any>
+  boardFilters?: Record<string, any> // renamed from globalFilters
   sortBy?: string
   sortOrder?: "asc" | "desc"
   cardFields?: string[] // Simplified to array of field names
@@ -47,7 +47,7 @@ export interface KanbanBoard {
   board: Board
   columns: KanbanColumn[]
   cardFields?: string[] // Simplified to array of field names
-  globalFilters?: Record<string, any>
+  boardFilters?: Record<string, any> // renamed from globalFilters
 }
 
 export interface KanbanColumn {
@@ -151,14 +151,14 @@ export class GitPlanAPI {
       id: columnConfig.id,
       title: columnConfig.title,
       color: columnConfig.color,
-      issues: this.filterIssuesForColumn(issues, columnConfig.filters, settings.globalFilters),
+      issues: this.filterIssuesForColumn(issues, columnConfig.filters, settings.boardFilters),
     }))
 
     return {
       board,
       columns,
       cardFields: settings.cardFields,
-      globalFilters: settings.globalFilters,
+      boardFilters: settings.boardFilters, // renamed from globalFilters
     }
   }
 
@@ -229,7 +229,7 @@ export class GitPlanAPI {
         // Validate and set defaults
         return {
           columns: settings.columns || [],
-          globalFilters: settings.globalFilters || {},
+          boardFilters: settings.boardFilters || settings.globalFilters || {}, // support both names for backward compatibility
           sortBy: settings.sortBy || "createdAt",
           sortOrder: settings.sortOrder || "desc",
           cardFields: settings.cardFields || undefined, // Now expects array of strings
@@ -245,11 +245,11 @@ export class GitPlanAPI {
   private filterIssuesForColumn(
     issues: Issue[],
     columnFilters: Record<string, any>,
-    globalFilters?: Record<string, any>,
+    boardFilters?: Record<string, any>, // renamed from globalFilters
   ): Issue[] {
     return issues.filter((issue) => {
-      // Apply global filters first
-      if (globalFilters && !this.matchesFilters(issue, globalFilters)) {
+      // Apply board filters first // renamed from global filters
+      if (boardFilters && !this.matchesFilters(issue, boardFilters)) {
         return false
       }
 
