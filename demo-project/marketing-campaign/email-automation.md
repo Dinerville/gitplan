@@ -1,11 +1,15 @@
 ---
 title: Email Marketing Automation
-status: idea
+status: planning
 priority: medium
 assignee: lisa-chen
-labels: ["email", "automation", "nurturing"]
+labels:
+  - email
+  - automation
+  - nurturing
 campaign: q1-2024
-createdAt: 2024-01-25
+createdAt: 2024-01-25T00:00:00.000Z
+updatedAt: '2025-08-11T23:05:46.263Z'
 ---
 
 # Email Marketing Automation

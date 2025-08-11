@@ -580,7 +580,7 @@ export default function BoardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="px-4 py-4">
+      <div className="p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex flex-col gap-4">

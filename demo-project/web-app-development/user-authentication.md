@@ -1,11 +1,15 @@
 ---
 title: Implement User Authentication System
-status: in-progress
+status: backlog
 priority: high
 assignee: john-doe
-labels: ["backend", "security", "auth"]
-createdAt: 2024-01-15
+labels:
+  - backend
+  - security
+  - auth
+createdAt: 2024-01-15T00:00:00.000Z
 estimatedHours: 16
+updatedAt: '2025-08-11T22:56:51.445Z'
 ---
 
 # User Authentication System

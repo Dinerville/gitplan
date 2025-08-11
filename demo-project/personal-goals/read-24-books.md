@@ -3,12 +3,15 @@ title: Read 24 Books This Year
 status: next
 priority: medium
 category: learning
-labels: ["reading", "personal-development"]
-createdAt: 2024-01-01
-targetDate: 2024-12-31
+labels:
+  - reading
+  - personal-development
+createdAt: 2024-01-01T00:00:00.000Z
+targetDate: 2024-12-31T00:00:00.000Z
 assignedTo: dima.naumau
 booksRead: 3
-deadline: 2026-01-01
+deadline: 2026-01-01T00:00:00.000Z
+updatedAt: '2025-08-11T23:02:40.740Z'
 ---
 
 # Read 24 Books This Year

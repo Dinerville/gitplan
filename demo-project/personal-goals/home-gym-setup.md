@@ -1,6 +1,6 @@
 ---
 title: Set Up Home Gym
-status: done
+status: someday
 priority: medium
 category: fitness
 labels:
@@ -9,7 +9,7 @@ labels:
 createdAt: 2024-01-15T00:00:00.000Z
 waitingFor: Equipment delivery
 assignedTo: dima.naumau
-updatedAt: '2025-08-11T22:46:49.230Z'
+updatedAt: '2025-08-11T22:51:38.963Z'
 ---
 
 # Home Gym Setup

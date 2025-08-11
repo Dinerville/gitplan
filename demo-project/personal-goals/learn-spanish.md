@@ -1,6 +1,6 @@
 ---
 title: Learn Spanish Conversational Level
-status: someday
+status: waiting
 priority: high
 category: learning
 labels:
@@ -9,7 +9,7 @@ labels:
 createdAt: 2024-01-20T00:00:00.000Z
 targetDate: 2024-06-30T00:00:00.000Z
 assignedTo: dima.naumau
-updatedAt: '2025-08-11T22:46:26.223Z'
+updatedAt: '2025-08-11T23:06:59.192Z'
 ---
 
 # Learn Spanish to Conversational Level

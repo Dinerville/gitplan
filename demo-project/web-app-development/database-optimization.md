@@ -1,11 +1,15 @@
 ---
 title: Optimize Database Queries
-status: review
+status: backlog
 priority: high
 assignee: sarah-jones
-labels: ["backend", "database", "performance"]
-createdAt: 2024-01-10
+labels:
+  - backend
+  - database
+  - performance
+createdAt: 2024-01-10T00:00:00.000Z
 estimatedHours: 20
+updatedAt: '2025-08-11T22:56:57.065Z'
 ---
 
 # Database Query Optimization

@@ -1,12 +1,16 @@
 ---
 title: Blog Content Calendar
-status: in-progress
+status: idea
 priority: medium
 assignee: david-lee
-labels: ["content", "blog", "seo"]
+labels:
+  - content
+  - blog
+  - seo
 campaign: q1-2024
-createdAt: 2024-01-18
-deadline: 2024-03-01
+createdAt: 2024-01-18T00:00:00.000Z
+deadline: 2024-03-01T00:00:00.000Z
+updatedAt: '2025-08-11T23:05:56.347Z'
 ---
 
 # Blog Content Calendar - Q1 2024
