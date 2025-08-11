@@ -114,7 +114,7 @@ export default function BoardPage() {
   if (!boardName) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-2 py-4">
           <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-8">
             <Link href="/" className="hover:text-foreground transition-colors">
               Boards
@@ -133,7 +133,7 @@ export default function BoardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-2 py-4">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -148,7 +148,7 @@ export default function BoardPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-2 py-4">
           <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-8">
             <Link href="/" className="hover:text-foreground transition-colors">
               Boards
@@ -171,7 +171,7 @@ export default function BoardPage() {
   if (!kanbanData) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-2 py-4">
           <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-8">
             <Link href="/" className="hover:text-foreground transition-colors">
               Boards
@@ -191,7 +191,7 @@ export default function BoardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-2 py-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex flex-col gap-4">
