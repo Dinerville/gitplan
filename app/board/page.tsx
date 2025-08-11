@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { FolderKanban, Calendar, User, Tag, AlertCircle, Clock, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -172,34 +172,68 @@ export default function BoardPage() {
 
   const renderCardFields = (issue: Issue, cardFields?: string[]) => {
     if (!cardFields || cardFields.length === 0) {
-      // Default fallback
-      return (
-        <>
-          {issue.frontmatter.priority && (
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-muted-foreground">priority:</span>
-              <span>{issue.frontmatter.priority}</span>
-            </div>
-          )}
-          {issue.frontmatter.assignee && (
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-muted-foreground">assignee:</span>
-              <span>{issue.frontmatter.assignee}</span>
-            </div>
-          )}
-        </>
-      )
+      // Default fallback - show nothing if no cardFields specified
+      return null
     }
 
     return cardFields.map((fieldName) => {
-      const value = issue.frontmatter[fieldName]
-      if (!value) return null
+      let value: any
+      let displayValue: string
 
-      // Special case for title - no key shown
-      if (fieldName === "title") {
-        return null // Title is already shown in CardTitle
+      // Handle special fields
+      switch (fieldName) {
+        case "title":
+          value = issue.title
+          break
+        case "content":
+          value = issue.content
+          // For content, show preview
+          if (value) {
+            displayValue = value.slice(0, 100) + (value.length > 100 ? "..." : "")
+          }
+          break
+        case "createdAt":
+          value = issue.createdAt
+          break
+        case "id":
+          value = issue.id
+          break
+        default:
+          value = issue.frontmatter[fieldName]
+          break
       }
 
+      if (!value) return null
+
+      // Special case for title - no key shown, larger text
+      if (fieldName === "title") {
+        return (
+          <div key={fieldName} className="mb-2">
+            <div className="text-sm font-medium leading-tight">{value}</div>
+          </div>
+        )
+      }
+
+      // Special case for content - show as description
+      if (fieldName === "content") {
+        return (
+          <div key={fieldName} className="mb-3">
+            <div className="text-xs text-muted-foreground line-clamp-2">{displayValue}</div>
+          </div>
+        )
+      }
+
+      // Special case for id - show with # prefix
+      if (fieldName === "id") {
+        return (
+          <div key={fieldName} className="flex justify-between items-center text-xs">
+            <span className="text-muted-foreground">id:</span>
+            <span className="font-mono">#{value}</span>
+          </div>
+        )
+      }
+
+      // Regular frontmatter fields
       const type = detectValueType(value)
       const formattedValue = formatValue(value, type)
 
@@ -348,28 +382,8 @@ export default function BoardPage() {
                           className="hover:shadow-sm transition-shadow cursor-pointer"
                           onClick={() => handleIssueClick(issue)}
                         >
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium leading-tight">{issue.title}</CardTitle>
-                          </CardHeader>
-                          <CardContent className="pt-0">
-                            {/* Issue Content Preview */}
-                            {issue.content && (
-                              <CardDescription className="text-xs mb-3 line-clamp-2">
-                                {issue.content.slice(0, 100)}
-                                {issue.content.length > 100 && "..."}
-                              </CardDescription>
-                            )}
-
-                            <div className="space-y-2 mb-3">{renderCardFields(issue, kanbanData.cardFields)}</div>
-
-                            {/* Issue Footer */}
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {formatDate(issue.createdAt)}
-                              </div>
-                              <div className="text-xs font-mono">#{issue.id}</div>
-                            </div>
+                          <CardContent className="p-4">
+                            <div className="space-y-2">{renderCardFields(issue, kanbanData.cardFields)}</div>
                           </CardContent>
                         </Card>
                       ))
