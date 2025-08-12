@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, FolderKanban, FileText, Folder, ChevronRight, ChevronDown, Calendar, Hash, Layers } from "lucide-react"
+import { Search, FolderKanban, FileText, Folder, ChevronRight, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -90,70 +90,21 @@ export default function BoardListPage() {
 
   const renderBoardCard = (board: Board) => (
     <Link key={board.id} href={`/board?id=${encodeURIComponent(board.id)}`}>
-      <Card className="hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 cursor-pointer group border-border/50 hover:border-primary/20 bg-card/50 backdrop-blur-sm">
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            {/* Header */}
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
-                    {board.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground truncate">{board.path}</p>
-                </div>
+      <Card className="hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 cursor-pointer group border-border/50 hover:border-primary/20">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <FileText className="h-5 w-5 text-primary" />
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:translate-x-1 flex-shrink-0" />
+              <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
+                {board.name}
+              </h3>
             </div>
-
-            {/* Stats */}
-            <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded bg-blue-100 dark:bg-blue-900/30">
-                  <Hash className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                </div>
-                <span className="text-sm font-medium">{board.issueCount}</span>
-                <span className="text-xs text-muted-foreground">issues</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded bg-green-100 dark:bg-green-900/30">
-                  <Layers className="h-3 w-3 text-green-600 dark:text-green-400" />
-                </div>
-                <span className="text-sm font-medium">{getColumnCount(board)}</span>
-                <span className="text-xs text-muted-foreground">columns</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded bg-orange-100 dark:bg-orange-900/30">
-                  <Calendar className="h-3 w-3 text-orange-600 dark:text-orange-400" />
-                </div>
-                <span className="text-xs text-muted-foreground">{formatDate(board.lastModified)}</span>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">{board.issueCount}</span>
+              <span className="text-xs text-muted-foreground">issues</span>
             </div>
-
-            {/* Column badges */}
-            {board.settings?.columns && board.settings.columns.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {board.settings.columns.slice(0, 3).map((column) => (
-                  <Badge
-                    key={column.id}
-                    variant="secondary"
-                    className="text-xs px-2 py-0.5 bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    {column.title}
-                  </Badge>
-                ))}
-                {board.settings.columns.length > 3 && (
-                  <Badge variant="outline" className="text-xs px-2 py-0.5">
-                    +{board.settings.columns.length - 3} more
-                  </Badge>
-                )}
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
