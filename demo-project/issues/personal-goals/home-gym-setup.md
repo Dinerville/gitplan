@@ -1,12 +1,13 @@
 ---
 title: Set Up Home Gym
-status: waiting
+status: completed
 priority: low
-deadline: 2024-06-30
+deadline: 2024-06-30T00:00:00.000Z
 assignedTo: me
 category: fitness
-targetDate: 2024-06-30
+targetDate: 2024-06-30T00:00:00.000Z
 budget: 2000
+updatedAt: '2025-08-12T00:17:49.995Z'
 ---
 
 # Set Up Home Gym
