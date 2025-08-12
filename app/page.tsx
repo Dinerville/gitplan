@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, FolderKanban, FileText, Folder, ChevronRight, ChevronDown } from "lucide-react"
+import { Search, FolderKanban, FileText, Folder, ChevronRight, ChevronDown, Calendar, Hash, Layers } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 
 interface Board {
@@ -89,19 +90,70 @@ export default function BoardListPage() {
 
   const renderBoardCard = (board: Board) => (
     <Link key={board.id} href={`/board?id=${encodeURIComponent(board.id)}`}>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer group">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <FileText className="h-5 w-5 text-primary" />
-            <div className="flex-1">
-              <h3 className="font-semibold group-hover:text-primary transition-colors">{board.name}</h3>
-              <div className="text-sm text-muted-foreground flex items-center gap-4 mt-1">
-                <span>{board.issueCount} issues</span>
-                <span>{getColumnCount(board)} columns</span>
-                <span>{formatDate(board.lastModified)}</span>
+      <Card className="hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 cursor-pointer group border-border/50 hover:border-primary/20 bg-card/50 backdrop-blur-sm">
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
+                    {board.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground truncate">{board.path}</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:translate-x-1 flex-shrink-0" />
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1 rounded bg-blue-100 dark:bg-blue-900/30">
+                  <Hash className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                </div>
+                <span className="text-sm font-medium">{board.issueCount}</span>
+                <span className="text-xs text-muted-foreground">issues</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="p-1 rounded bg-green-100 dark:bg-green-900/30">
+                  <Layers className="h-3 w-3 text-green-600 dark:text-green-400" />
+                </div>
+                <span className="text-sm font-medium">{getColumnCount(board)}</span>
+                <span className="text-xs text-muted-foreground">columns</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="p-1 rounded bg-orange-100 dark:bg-orange-900/30">
+                  <Calendar className="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                </div>
+                <span className="text-xs text-muted-foreground">{formatDate(board.lastModified)}</span>
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+
+            {/* Column badges */}
+            {board.settings?.columns && board.settings.columns.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {board.settings.columns.slice(0, 3).map((column) => (
+                  <Badge
+                    key={column.id}
+                    variant="secondary"
+                    className="text-xs px-2 py-0.5 bg-muted/50 hover:bg-muted transition-colors"
+                  >
+                    {column.title}
+                  </Badge>
+                ))}
+                {board.settings.columns.length > 3 && (
+                  <Badge variant="outline" className="text-xs px-2 py-0.5">
+                    +{board.settings.columns.length - 3} more
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -123,35 +175,50 @@ export default function BoardListPage() {
     const nestedGroups = Object.entries(groupedBoards).filter(([key]) => key !== "root")
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Root level boards as cards */}
-        {rootBoards.map(renderBoardCard)}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">{rootBoards.map(renderBoardCard)}</div>
 
         {/* Nested groups as collapsible sections */}
         {nestedGroups.map(([parentPath, groupBoards]) => {
           const isExpanded = expandedSections.has(parentPath)
           return (
-            <div key={parentPath} className="space-y-2">
+            <div key={parentPath} className="space-y-4">
               <Button
                 variant="ghost"
                 onClick={() => toggleSection(parentPath)}
-                className="w-full justify-start p-3 h-auto hover:bg-muted/50"
+                className="w-full justify-start p-4 h-auto hover:bg-muted/50 rounded-lg border border-border/50 hover:border-border transition-all"
               >
                 <div className="flex items-center gap-3 w-full">
-                  {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  )}
-                  <Folder className="h-5 w-5 text-primary" />
-                  <span className="font-medium capitalize">{parentPath.replace(/[_-]/g, " ")}</span>
-                  <span className="text-sm text-muted-foreground ml-auto">
-                    {groupBoards.length} board{groupBoards.length !== 1 ? "s" : ""}
-                  </span>
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Folder className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <span className="font-semibold text-base capitalize">{parentPath.replace(/[_-]/g, " ")}</span>
+                    <p className="text-sm text-muted-foreground">
+                      {groupBoards.length} board{groupBoards.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <Badge variant="secondary" className="ml-auto">
+                    {groupBoards.length}
+                  </Badge>
                 </div>
               </Button>
 
-              {isExpanded && <div className="ml-6 space-y-3">{groupBoards.map(renderBoardCard)}</div>}
+              {isExpanded && (
+                <div className="ml-4 pl-4 border-l-2 border-border/30">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {groupBoards.map(renderBoardCard)}
+                  </div>
+                </div>
+              )}
             </div>
           )
         })}
@@ -232,10 +299,15 @@ export default function BoardListPage() {
         {/* Boards Card Layout */}
         {boards.length > 0 && (
           <div>
-            <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
-              <FolderKanban className="h-5 w-5" />
-              Boards
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <FolderKanban className="h-6 w-6" />
+                Boards
+                <Badge variant="secondary" className="ml-2">
+                  {boards.length}
+                </Badge>
+              </h2>
+            </div>
             {renderCardLayout(groupedBoards)}
           </div>
         )}
