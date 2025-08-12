@@ -48,9 +48,26 @@ export default function BoardListPage() {
     }
   }
 
-  const getRelativePath = (fullPath: string) => {
-    const parts = fullPath.split("/")
-    return parts.slice(1).join("/") || parts[0]
+  const getRelativeIssuePath = (fullPath: string) => {
+    const issuesIndex = fullPath.indexOf("/issues/")
+    if (issuesIndex === -1) return fullPath
+    return fullPath.substring(issuesIndex + 8) // Remove everything up to and including '/issues/'
+  }
+
+  const getRelativeBoardPath = (fullPath: string) => {
+    const boardsIndex = fullPath.indexOf("/boards/")
+    if (boardsIndex === -1) return ""
+
+    let relativePath = fullPath.substring(boardsIndex + 8) // Remove everything up to and including '/boards/'
+
+    // Remove the filename if it exists (e.g., view.json or *.view.json)
+    if (relativePath.includes("/")) {
+      relativePath = relativePath.substring(0, relativePath.lastIndexOf("/"))
+    } else if (relativePath.endsWith(".view.json") || relativePath === "view.json") {
+      relativePath = ""
+    }
+
+    return relativePath
   }
 
   if (loading) {
@@ -132,12 +149,14 @@ export default function BoardListPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Path:</span>
-                        <span className="font-mono text-xs">{getRelativePath(board.path)}</span>
+                        <span className="font-mono text-xs">{getRelativeIssuePath(board.path)}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Board:</span>
-                        <span className="font-mono text-xs">{getRelativePath(board.viewPath)}</span>
-                      </div>
+                      {getRelativeBoardPath(board.viewPath) && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Board:</span>
+                          <span className="font-mono text-xs">{getRelativeBoardPath(board.viewPath)}</span>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
