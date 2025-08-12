@@ -1,6 +1,6 @@
 {
   "name": "gitplan",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "private": false,
   "description": "Git-based Kanban board system",
   "keywords": [
@@ -10,16 +10,16 @@
     "cli",
     "markdown"
   ],
-  "homepage": "https://github.com/yourusername/gitplan#readme",
+  "homepage": "https://github.com/dinerville/gitplan#readme",
   "bugs": {
-    "url": "https://github.com/yourusername/gitplan/issues"
+    "url": "https://github.com/dinerville/gitplan/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/gitplan.git"
+    "url": "https://github.com/dinerville/gitplan.git"
   },
   "license": "MIT",
-  "author": "Your Name",
+  "author": "Dzmitry Naumau",
   "main": "dist/cli.js",
   "bin": {
     "gitplan": "dist/cli.js"
@@ -27,21 +27,21 @@
   "files": [
     "dist/**/*",
     "demo-project/**/*",
+    "out/**/*",
     "README.md"
   ],
   "scripts": {
     "build": "next build",
-    "build:cli": "tsc --project tsconfig.cli.json && chmod +x dist/cli.js",
-    "build:publish": "yarn clean && yarn build && yarn build:cli && mkdir -p publish && cp -r dist publish/ && cp -r demo-project publish/ && cp package.json README.md publish/",
-    "clean": "rm -rf dist publish",
+    "build:cli": "tsc --project tsconfig.cli.json",
+    "build:publish": "yarn clean && yarn build && yarn build:cli && mkdir -p publish && cp -r dist publish/ && cp -r out publish/ && cp -r demo-project publish/ && cp package.json README.md publish/",
+    "clean": "rm -rf dist publish out",
     "cli": "yarn build && yarn build:cli && cd demo-project && node ../dist/cli.js -p 3057",
     "dev": "next dev",
     "dev:cli": "tsx src/cli.ts",
     "link:cli": "yarn build:cli && yarn link",
     "lint": "next lint",
-    "prepublishOnly": "yarn build:cli",
     "publish:dry-run": "yarn build:publish && cd publish && npm publish --dry-run",
-    "publish:npm": "yarn build:publish && cd publish && npm publish",
+    "publish:npm": "yarn build:publish && cd publish && npm publish --access public",
     "start": "next start",
     "unlink:cli": "yarn unlink gitplan"
   },
@@ -85,13 +85,11 @@
     "express": "latest",
     "fs": "latest",
     "geist": "latest",
-    "get-port": "latest",
     "gray-matter": "latest",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
     "next": "15.2.4",
     "next-themes": "latest",
-    "open": "latest",
     "path": "latest",
     "react": "^19",
     "react-day-picker": "9.8.0",

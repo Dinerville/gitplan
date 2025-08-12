@@ -2,13 +2,11 @@ import express from "express"
 import cors from "cors"
 import * as path from "path"
 import * as fs from "fs"
-import getPort from "get-port"
-import open from "open"
 import { GitPlanAPI } from "./api"
 
 export async function startServer(workingDir: string, preferredPort?: string) {
   const app = express()
-  const port = await getPort({ port: preferredPort ? Number.parseInt(preferredPort) : 3000 })
+  const port = preferredPort ? Number.parseInt(preferredPort) : 3057;
 
   // Enable CORS and JSON parsing
   app.use(cors())
@@ -184,10 +182,5 @@ export async function startServer(workingDir: string, preferredPort?: string) {
     const url = `http://localhost:${port}`
     console.log(`✅ GitPlan server running at ${url}`)
     console.log(`📁 Working directory: ${workingDir}`)
-
-    // Open browser
-    open(url).catch(() => {
-      console.log(`🌐 Please open ${url} in your browser`)
-    })
   })
 }
