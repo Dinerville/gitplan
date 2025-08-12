@@ -2,10 +2,44 @@
 
 import { Command } from "commander"
 import { startServer } from "./server"
+import * as fs from "fs"
+import * as path from "path"
 
 const program = new Command()
 
 program.name("gitplan").description("Git-based Kanban board system").version("1.0.0")
+
+program
+  .command("init")
+  .description("Initialize a new GitPlan project with demo boards and issues")
+  .action(async () => {
+    const currentDir = process.cwd()
+    const packageDir = path.dirname(__dirname) // Go up from dist to package root
+    const demoProjectPath = path.join(packageDir, "demo-project")
+
+    console.log(`📋 Initializing GitPlan project in: ${currentDir}`)
+
+    try {
+      // Check if demo-project exists in the package
+      if (!fs.existsSync(demoProjectPath)) {
+        console.error("❌ Demo project not found in package")
+        process.exit(1)
+      }
+
+      // Copy demo-project contents to current directory
+      copyRecursive(demoProjectPath, currentDir)
+
+      console.log("✅ GitPlan project initialized successfully!")
+      console.log("📁 Created:")
+      console.log("  - boards/ (board configurations)")
+      console.log("  - issues/ (markdown issues)")
+      console.log("")
+      console.log("🚀 Run 'gitplan' to start the server")
+    } catch (error) {
+      console.error("❌ Failed to initialize GitPlan project:", error)
+      process.exit(1)
+    }
+  })
 
 program
   .command("start", { isDefault: true })
@@ -22,5 +56,22 @@ program
       process.exit(1)
     }
   })
+
+function copyRecursive(src: string, dest: string) {
+  const stat = fs.statSync(src)
+
+  if (stat.isDirectory()) {
+    if (!fs.existsSync(dest)) {
+      fs.mkdirSync(dest, { recursive: true })
+    }
+
+    const files = fs.readdirSync(src)
+    for (const file of files) {
+      copyRecursive(path.join(src, file), path.join(dest, file))
+    }
+  } else {
+    fs.copyFileSync(src, dest)
+  }
+}
 
 program.parse()
