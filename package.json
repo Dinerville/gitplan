@@ -32,7 +32,7 @@
     "build": "next build",
     "build:cli": "tsc --project tsconfig.cli.json && chmod +x dist/cli.js",
     "clean": "rm -rf dist",
-    "cli": "yarn build && yarn build:cli && cd demo-project && node ../dist/cli.js",
+    "cli": "yarn build && yarn build:cli && cd demo-project && node ../dist/cli.js -p 3057",
     "dev": "next dev",
     "dev:cli": "tsx src/cli.ts",
     "link:cli": "yarn build:cli && yarn link",

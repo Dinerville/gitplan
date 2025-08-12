@@ -1,11 +1,12 @@
 ---
 title: Email Marketing Automation
-status: review
+status: in-progress
 campaign: q1-2024
 channel: email
-dueDate: 2024-01-15
+dueDate: 2024-01-15T00:00:00.000Z
 assignee: lisa-email
 priority: high
+updatedAt: '2025-08-12T07:51:42.156Z'
 ---
 
 # Email Marketing Automation Setup

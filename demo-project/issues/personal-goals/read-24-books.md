@@ -1,12 +1,13 @@
 ---
 title: Read 24 Books This Year
-status: next
+status: someday
 priority: medium
-deadline: 2024-12-31
+deadline: 2024-12-31T00:00:00.000Z
 assignedTo: me
 category: personal-development
-targetDate: 2024-12-31
+targetDate: 2024-12-31T00:00:00.000Z
 booksRead: 8
+updatedAt: '2025-08-12T18:34:47.571Z'
 ---
 
 # Read 24 Books This Year
