@@ -1,49 +1,12 @@
 {
-  "name": "gitplan",
-  "version": "0.1.2",
-  "private": false,
-  "description": "Git-based Kanban board system",
-  "keywords": [
-    "kanban",
-    "git",
-    "project-management",
-    "cli",
-    "markdown"
-  ],
-  "homepage": "https://github.com/dinerville/gitplan#readme",
-  "bugs": {
-    "url": "https://github.com/dinerville/gitplan/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/dinerville/gitplan.git"
-  },
-  "license": "MIT",
-  "author": "Dzmitry Naumau",
-  "main": "dist/cli.js",
-  "bin": {
-    "gitplan": "dist/cli.js"
-  },
-  "files": [
-    "dist/**/*",
-    "demo-project/**/*",
-    "out/**/*",
-    "README.md"
-  ],
+  "name": "my-v0-project",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
     "build": "next build",
-    "build:cli": "tsc --project tsconfig.cli.json",
-    "build:publish": "yarn clean && yarn build && yarn build:cli && mkdir -p publish && cp -r dist publish/ && cp -r out publish/ && cp -r demo-project publish/ && cp package.json README.md publish/",
-    "clean": "rm -rf dist publish out",
-    "cli": "yarn build && yarn build:cli && cd demo-project && node ../dist/cli.js -p 3057",
     "dev": "next dev",
-    "dev:cli": "tsx src/cli.ts",
-    "link:cli": "yarn build:cli && yarn link",
     "lint": "next lint",
-    "publish:dry-run": "yarn build:publish && cd publish && npm publish --dry-run",
-    "publish:npm": "yarn build:publish && cd publish && npm publish --access public",
-    "start": "next start",
-    "unlink:cli": "yarn unlink gitplan"
+    "start": "next start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -104,14 +67,11 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
-    "tsx": "^4.7.0",
     "typescript": "^5"
   }
 }
