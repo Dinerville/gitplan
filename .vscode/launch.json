@@ -6,7 +6,7 @@
     "configurations": [
       {
         "type": "node-terminal",
-        "name": "Debug",
+        "name": "Debug cli",
         "request": "launch",
         "command": "nvm use 22 && cd demo-project && node ../dist/server.js",
         "cwd": "${workspaceFolder}"
