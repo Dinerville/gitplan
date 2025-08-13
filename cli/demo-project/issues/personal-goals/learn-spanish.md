@@ -1,11 +1,12 @@
 ---
 title: Learn Spanish
-status: next
+status: waiting
 priority: high
-deadline: 2024-12-31
+deadline: 2024-12-31T00:00:00.000Z
 assignedTo: me
 category: education
-targetDate: 2024-12-31
+targetDate: 2024-12-31T00:00:00.000Z
+updatedAt: '2025-08-13T21:08:18.633Z'
 ---
 
 # Learn Spanish

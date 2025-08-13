@@ -571,73 +571,74 @@ export default function BoardPage() {
         backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed'
       }
-    : {}
+    : { backgroundColor: '#0079bf' }
 
   return (
-    <div className="min-h-screen bg-background" style={backgroundStyle}>
-      <div className="p-6" style={kanbanData?.board.settings?.backgroundImage ? { backgroundColor: 'rgba(255, 255, 255, 0.9)' } : {}}>
-        <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-4">
-          <Link href="/" className="hover:text-foreground transition-colors">
-            Boards
-          </Link>
-          <ChevronRight className="h-4 w-4" />
-          <span className="text-foreground font-medium">{board.name}</span>
-        </nav>
+    <div className="min-h-screen" style={backgroundStyle}>
+      <div className="p-4">
+        <div className="mb-6">
+          <nav className="flex items-center space-x-2 text-sm mb-4">
+            <Link href="/" className="text-white/80 hover:text-white transition-colors">
+              Boards
+            </Link>
+            <ChevronRight className="h-4 w-4 text-white/60" />
+            <span className="text-white font-semibold text-lg">{board.name}</span>
+          </nav>
 
-        {Object.keys(boardFilters).length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">Board Filters</h3>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(boardFilters).map(([key, value]) => (
-                <Badge key={key} variant="secondary" className="text-xs">
-                  <span className="text-muted-foreground">{key}:</span>
-                  <span className="ml-1">{formatValue(value)}</span>
-                </Badge>
-              ))}
+          {Object.keys(boardFilters).length > 0 && (
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+              <h3 className="text-sm font-medium text-white/80 mb-2">Board Filters</h3>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(boardFilters).map(([key, value]) => (
+                  <Badge key={key} className="text-xs bg-white/20 text-white border-white/30">
+                    <span className="text-white/80">{key}:</span>
+                    <span className="ml-1">{formatValue(value)}</span>
+                  </Badge>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        <div className="flex gap-6 overflow-x-auto pb-6">
+        <div className="flex gap-4 overflow-x-auto pb-6">
           {columns.map((column) => (
             <div
               key={column.id}
-              className="flex-shrink-0 w-80"
+              className="flex-shrink-0 w-72"
               onDragOver={(e) => handleDragOver(e, column.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, column.id)}
             >
               <div
-                className={`bg-muted/30 rounded-lg p-4 transition-colors ${
-                  dragOverColumn === column.id ? "bg-primary/10 border-2 border-primary/20" : ""
+                className={`bg-gray-100 rounded-lg transition-colors ${
+                  dragOverColumn === column.id ? "bg-blue-50 border-2 border-blue-200" : ""
                 }`}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: column.color || "#6b7280" }} />
-                    <h3 className="font-semibold text-sm">{column.title}</h3>
-                    <Badge variant="secondary" className="text-xs">
+                <div className="p-3 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-sm text-gray-700">{column.title}</h3>
+                    <Badge variant="secondary" className="text-xs bg-gray-200 text-gray-600">
                       {column.issues.length}
                     </Badge>
                   </div>
                 </div>
 
-                <ScrollArea className="h-[calc(100vh-200px)]">
-                  <div className="space-y-3">
+                <ScrollArea className="h-[calc(100vh-180px)] p-2">
+                  <div className="space-y-2">
                     {column.issues.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground text-sm">
-                        {dragOverColumn === column.id ? "Drop issue here" : "No issues in this column"}
+                      <div className="text-center py-8 text-gray-500 text-sm">
+                        {dragOverColumn === column.id ? "Drop issue here" : "No cards"}
                       </div>
                     ) : (
                       column.issues.map((issue) => (
                         <Card
                           key={issue.id}
-                          className="hover:shadow-sm transition-shadow cursor-pointer select-none"
+                          className="bg-white hover:shadow-md transition-all cursor-pointer select-none border-0 shadow-sm hover:shadow-lg"
                           draggable
                           onDragStart={(e) => handleDragStart(e, issue, column.id)}
                           onClick={() => handleIssueClick(issue)}
                         >
-                          <CardContent className="p-4">
+                          <CardContent className="p-3">
                             <div className="space-y-2">{renderCardFields(issue, kanbanData.cardFields)}</div>
                           </CardContent>
                         </Card>

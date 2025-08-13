@@ -1,11 +1,12 @@
 ---
 title: Blog Content Calendar
-status: in-progress
+status: planning
 campaign: q1-2024
 channel: blog
-dueDate: 2024-02-15
+dueDate: 2024-02-15T00:00:00.000Z
 assignee: mike-content
 priority: medium
+updatedAt: '2025-08-13T21:07:16.653Z'
 ---
 
 # Blog Content Calendar for Q1 2024
