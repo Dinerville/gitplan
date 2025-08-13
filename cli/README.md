@@ -14,18 +14,18 @@ GitPlan is a Git-based Kanban board system that uses your file system as a datab
 ## Installation
 
 Init demo
-```
+\`\`\`
 npx gitplan init
-```
+\`\`\`
 
 Start gitplan
-```
+\`\`\`
 npx gitplan
-```
+\`\`\`
 
 ## Project Structure
 
-```
+\`\`\`
 your-folder/
 ├── boards/               
 │   ├── personal-goals.view.json          # Board configuration
@@ -36,7 +36,7 @@ your-folder/
 │   ├── another-feature-request.md        # Issue as markdown file
 │   └── ...
 └── ...
-```
+\`\`\`
 
 ## Board Configuration (view.json)
 
@@ -46,7 +46,7 @@ Configure your board columns and filtering with a `view.json` file:
 
 Issues are markdown files with frontmatter:
 
-```markdown
+\`\`\`markdown
 ---
 title: Implement User Authentication
 status: in-progress
@@ -70,20 +70,20 @@ Your issue content goes here in markdown format.
 ## Notes
 
 Any additional notes or details.
-```
+\`\`\`
 
 ## Filtering Options
 
 GitPlan supports powerful filtering in your `view.json`:
 
 ### Basic Filters
-```json
+\`\`\`json
 {
   "status": "todo",
   "priority": "high",
   "assignee": "john-doe"
 }
-```
+\`\`\`
 
 ## Demo Project
 
@@ -95,10 +95,10 @@ This repository includes a demo project in the `demo-project/` folder with three
 
 To try the demo:
 
-```bash
+\`\`\`bash
 cd demo-project
 npx gitplan
-```
+\`\`\`
 
 ## Development
 
@@ -109,7 +109,7 @@ npx gitplan
 
 ### Setup
 
-```bash
+\`\`\`bash
 # Clone the repository
 git clone <repository-url>
 cd gitplan
@@ -118,21 +118,21 @@ cd gitplan
 npm install
 # or
 yarn install
-```
+\`\`\`
 
 ### CLI Development
 
-```bash
+\`\`\`bash
 
 # Test the CLI
 npm run test:cli
 # or
 yarn test:cli
-```
+\`\`\`
 
 ### Frontend Development
 
-```bash
+\`\`\`bash
 # Start Next.js development server
 npm run dev
 # or
@@ -147,14 +147,14 @@ yarn build
 npm start
 # or
 yarn start
-```
+\`\`\`
 
 ### Publishing
 
-```bash
+\`\`\`bash
 # Build everything and publish to npm
 cd publish && npm publish
-```
+\`\`\`
 
 The CLI will be available as `gitplan` command globally after installation.
 
