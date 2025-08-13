@@ -20,6 +20,7 @@ interface Issue {
   content: string
   frontmatter: Record<string, any>
   filename: string
+  relativePath: string
   createdAt?: string
   updatedAt?: string
 }
@@ -51,6 +52,7 @@ interface Board {
       id: string
       filters: Record<string, any>
     }[]
+    backgroundImage?: string
   }
 }
 
@@ -206,7 +208,7 @@ export default function BoardPage() {
 
     return cardFields.map((fieldName) => {
       let value: any
-      let displayValue: string
+      let displayValue: string = ""
 
       // Handle special fields
       switch (fieldName) {
@@ -450,7 +452,7 @@ export default function BoardPage() {
   }
 
   const handleConfirmUpdate = async () => {
-    if (!pendingUpdate) return
+    if (!pendingUpdate || !boardId) return
 
     setIsUpdating(true)
     try {
@@ -561,9 +563,19 @@ export default function BoardPage() {
 
   const { board, columns } = kanbanData
 
+  const backgroundStyle = kanbanData?.board.settings?.backgroundImage
+    ? {
+        backgroundImage: `url(${kanbanData.board.settings.backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      }
+    : {}
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="p-6">
+    <div className="min-h-screen bg-background" style={backgroundStyle}>
+      <div className="p-6" style={kanbanData?.board.settings?.backgroundImage ? { backgroundColor: 'rgba(255, 255, 255, 0.9)' } : {}}>
         <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-4">
           <Link href="/" className="hover:text-foreground transition-colors">
             Boards

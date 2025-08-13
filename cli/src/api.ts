@@ -30,6 +30,7 @@ export interface BoardSettings {
   sortBy?: string
   sortOrder?: "asc" | "desc"
   cardFields?: string[] // Simplified to array of field names
+  backgroundImage?: string // URL to background image
 }
 
 export interface CardField {
@@ -306,6 +307,7 @@ export class GitPlanAPI {
       sortBy: settings.sortBy || "createdAt",
       sortOrder: settings.sortOrder || "desc",
       cardFields: settings.cardFields || undefined,
+      backgroundImage: settings.backgroundImage || undefined,
     }
   }
 
