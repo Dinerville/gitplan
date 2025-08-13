@@ -1,0 +1,29 @@
+{
+  "name": "Simple Board",
+  "path": "",
+  "columns": [
+    {
+      "name": "To Do",
+      "color": "#6b7280",
+      "filters": {
+        "status": "todo"
+      }
+    },
+    {
+      "name": "In Progress",
+      "color": "#f59e0b",
+      "filters": {
+        "status": "in-progress"
+      }
+    },
+    {
+      "name": "Done",
+      "color": "#10b981",
+      "filters": {
+        "status": "done"
+      }
+    }
+  ],
+  "cardFields": ["title", "assignee", "priority"],
+  "sortBy": "priority"
+}
