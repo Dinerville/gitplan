@@ -7,7 +7,11 @@ import * as path from "path"
 
 const program = new Command()
 
-program.name("gitplan").description("Git-based Kanban board system").version("1.0.0")
+// Read version from package.json
+const packageJsonPath = path.join(__dirname, "..", "package.json")
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"))
+
+program.name("gitplan").description("Git-based Kanban board system").version(packageJson.version)
 
 program
   .command("init")
